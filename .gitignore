@@ -1,0 +1,5 @@
+out/
+assets/
+fontpkg/
+__pycache__/
+*.pyc

@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>롱블랙 V0 재현</title>
+<meta name="description" content="longblack.co 모바일 화면 재현 프로토타입 (IPS 8회차 V0)">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ───────── 롱블랙 모바일 V0 재현 — 실측 기반 스타일 (longblack_spec.md) ───────── */
+:root{
+  --ink:#191919; --ink2:#141414; --rb:#282828; --rb7:#444; --rb6:#666; --rb5:#999; --rb4:#c8c8c8; --rb3:#d9d9d9; --rb2:#e7e7e7; --rb1:#f2f2f2; --rb0:#f5f5f5;
+  --K:#5962ff; --B:#d3b18d; --C:#9fe99e; --L:#ff5126; --N:#8dbcd7;
+  --purple:#a48dff; --teal:#2e8188; --wine:#823f4c; --mbp:#967cff; --hl:#efe9ff; --hlink:#8762ff;
+  --orange:#ff5126; --banner:#ff6638; --game:#ff6f36; --gamebadge:#d0ff71; --teampass:#a892ff;
+  --progress-bg:#78424d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:#e9e9e9;font-family:Pretendard,"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;-webkit-font-smoothing:antialiased;color:var(--ink2);line-height:1.5;overflow-x:hidden}
+button{font:inherit;border:0;background:none;cursor:pointer;color:inherit;padding:0}
+a{color:inherit;text-decoration:none}
+input,textarea{font:inherit;color:inherit}
+ul{list-style:none}
+svg{display:block}
+.app{position:relative;max-width:400px;margin:0 auto;background:#fff;min-height:100vh;overflow-x:clip}
+.hidden{display:none!important}
+.logo{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-size:30px;line-height:28px;letter-spacing:-.6px;font-weight:500;white-space:nowrap}
+.ico{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ico.f{fill:currentColor;stroke:none}
+.thumb{position:relative;overflow:hidden;background:var(--rb0)}
+.thumb .ph{position:absolute;inset:0;background:var(--ph,#ddd)}
+.thumb .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(0,0,0,.18))}
+.thumb .ph i{position:absolute;right:-12%;bottom:-18%;width:70%;height:70%;border-radius:50%;background:rgba(255,255,255,.22)}
+.thumb .ph b{position:absolute;left:10px;bottom:8px;font:600 11px/1.2 Pretendard,sans-serif;color:rgba(255,255,255,.85);letter-spacing:.2px}
+.bm{position:absolute;left:0;top:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.bm .ico{width:24px;height:24px}
+.bm.on .ico{fill:#fff}
+.ed{font-weight:700}
+.ed.K{color:var(--K)}.ed.B{color:var(--B)}.ed.C{color:var(--C)}.ed.L{color:var(--L)}.ed.N{color:var(--N)}
+.ribbon{position:absolute;left:0;right:0;bottom:0;height:26px;display:flex;align-items:center;justify-content:center;font:600 12px/18px Pretendard,sans-serif;color:var(--ink)}
+.ribbon.n{background:var(--N)}.ribbon.b{background:var(--B)}
+.star{width:18px;height:18px;fill:#ffb800;stroke:none}
+.rate{display:flex;align-items:center;gap:2px;font-size:14px}
+.rate b{font-weight:600;color:var(--ink)}
+.rate span{color:var(--rb5)}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hscroll{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll>*{scroll-snap-align:start;flex:0 0 auto}
+
+/* ── 상단 배너 + 헤더 ── */
+.topbanner{display:flex;align-items:center;justify-content:space-between;height:40px;padding:8px 20px;background:var(--teampass);color:#000}
+.topbanner p{font-size:18px;font-weight:700;line-height:26px}
+.topbanner .ico{width:16px;height:16px;stroke-width:2}
+.hdr{position:sticky;top:0;z-index:30;height:60px;display:flex;align-items:center;justify-content:space-between;padding-right:24px;background:var(--hdr,#282828);color:#fff}
+.hdr.color{color:var(--ink)}
+.hdr .lg{padding:0 20px;display:flex;align-items:center;height:60px}
+.hdr .r{display:flex;align-items:center;gap:20px}
+.hdr .ib{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.hdr .ib .ico{width:28px;height:28px;stroke-width:1.7}
+.hdr .allnotes{height:36px;padding:8px 12px;border-radius:4px;background:#444;color:#fff;font-size:14px;font-weight:600;line-height:20px;white-space:nowrap}
+
+/* 노트 상세: 헤더/툴바 교체 + 진행바 */
+.notebar{position:sticky;top:0;z-index:30;background:var(--rb)}
+.notebar .layer{position:relative;height:60px}
+.notebar .hdr,.notebar .tools{position:absolute;inset:0;transition:opacity .18s}
+.notebar .hdr{position:absolute}
+.notebar .tools{display:flex;align-items:center;padding:0 16px;gap:16px;color:rgba(255,255,255,.7)}
+.notebar .tools .tb{position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.notebar .tools .tb .ico{width:26px;height:26px;stroke-width:1.6}
+.notebar .tools .tb.on{color:#fff}.notebar .tools .tb.on .ico{fill:#fff}
+.notebar .tools .tb .dot{position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--orange)}
+.notebar .tools .set{margin-left:auto;color:var(--purple)}
+.notebar .tools .set .ico{width:28px;height:28px}
+.notebar:not(.up) .hdr{opacity:0;visibility:hidden}
+.notebar.up .tools{opacity:0;visibility:hidden}
+.notebar .prog{height:6px;background:var(--progress-bg)}
+.notebar .prog i{display:block;height:100%;width:0;background:var(--hlink);transition:width .12s}
+
+/* ── 드로어 ── */
+.ov{position:fixed;inset:0;z-index:100;display:none}
+.ov.show{display:block}
+.ov .dim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:80%;max-width:320px;background:var(--rb);display:flex;flex-direction:column;overflow-y:auto;transform:translateX(100%);transition:transform .22s ease-out;color:var(--ink)}
+.ov.show .drawer{transform:none}
+.drawer .x{position:absolute;top:12px;right:16px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff}
+.drawer .x .ico{width:28px;height:28px;stroke-width:2}
+.drawer .acct{height:150px;padding:56px 20px 0;color:#fff}
+.drawer .chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:4px 12px;border-radius:1000px;background:#444;font-size:14px;line-height:20px}
+.drawer .chip b{color:var(--banner);font-weight:600}.drawer .chip span{color:var(--rb2);font-weight:500}
+.drawer .nm{margin-top:8px;font-size:16px;line-height:22px}.drawer .nm b{font-weight:700}
+.drawer .em{font-size:14px;line-height:20px;color:var(--rb5);margin-top:2px}
+.drawer .blk{padding:10px 0}
+.drawer .blk a{display:flex;align-items:center;gap:6px;height:40px;padding:8px 20px;font-size:18px;font-weight:500;line-height:24px;color:var(--ink)}
+.drawer .blk.k{background:var(--K)}.drawer .blk.p{background:var(--purple);position:relative}.drawer .blk.t{background:var(--teal)}.drawer .blk.w{background:var(--wine)}
+.drawer .gamebadge{display:inline-flex;align-items:center;height:20px;padding:2px 6px;border-radius:999px;background:var(--gamebadge);font-size:12px;font-weight:600;line-height:18px}
+.drawer .tip{position:absolute;left:24px;top:-22px;display:flex;align-items:center;gap:8px;height:32px;padding:6px 10px 6px 12px;border-radius:4px;background:var(--rb2);font-size:14px;font-weight:500;line-height:20px;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.15);z-index:2}
+.drawer .tip::after{content:"";position:absolute;left:18px;bottom:-6px;border:6px solid transparent;border-top-color:var(--rb2);border-bottom:0}
+.drawer .tip .ico{width:16px;height:16px}
+.drawer .dfoot{padding:12px 0 0}
+.drawer .dfoot a{display:flex;align-items:center;height:28px;padding:0 20px;font-size:14px;font-weight:500;color:var(--rb4)}
+.drawer .about{margin-top:12px;position:relative;height:92px;padding:20px 24px;background:#121212;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.drawer .about p{font-size:20px;font-weight:600;line-height:26px}.drawer .about p b{color:var(--L);font-weight:600}
+.drawer .about .img{width:107px;height:73px;border-radius:4px;background:linear-gradient(135deg,#2b2b2b,#555);filter:brightness(.8)}
+.drawer .about .ico{width:28px;height:28px;stroke-width:1.6}
+.drawer .logout{margin-top:auto;display:flex;align-items:center;gap:4px;padding:14px 20px;border-top:.5px solid rgba(255,255,255,.2);font-size:14px;font-weight:500;color:var(--rb5)}
+.drawer .logout .ico{width:20px;height:20px}
+
+/* ── 홈 ── */
+.hero{display:block;background:var(--rb);color:#f5f5f5}
+.hero .img{position:relative;height:267px;overflow:hidden;background:linear-gradient(160deg,#d9cdb8 0%,#c9b7a0 35%,#8d9a95 36%,#4e6b60 62%,#c3775f 63%,#9a3f2e 100%)}
+.hero .img .sun{position:absolute;right:62px;top:70px;width:96px;height:96px;border-radius:50%;background:#e2603e}
+.hero .img .mark{position:absolute;left:20px;top:16px;font:900 34px/1 Pretendard,sans-serif;color:#2d2516;letter-spacing:-1px}
+.hero .img .pin{position:absolute;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#2f5a4a;border:3px solid #fff}
+.hero .img .today{position:absolute;left:0;bottom:0;width:105px;height:48px;display:flex;align-items:center;padding-left:22px;background:var(--rb);color:var(--L);font-size:18px;font-weight:700}
+.hero .tip{position:absolute;left:95px;bottom:-70px;z-index:3;width:210px;padding:12px 16px 12px;border-radius:6px;background:var(--hlink);color:#fff;font-size:14px;line-height:20px;text-align:center;box-shadow:0 0 6px rgba(0,0,0,.2)}
+.hero .tip b{font-weight:700}
+.hero .tip .lib{width:32px;height:22px;margin:0 auto 6px;display:block}
+.hero .tip::before{content:"";position:absolute;left:50%;top:-6px;margin-left:-6px;border:6px solid transparent;border-bottom-color:var(--hlink);border-top:0}
+.hero .tip .x{position:absolute;top:8px;right:8px;width:16px;height:16px;color:#fff}
+.hero .tip .x .ico{width:16px;height:16px;stroke-width:2}
+.hero .body{position:relative;padding:16px 20px 28px}
+.hero .timer{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:1.4px solid rgba(255,255,255,.35)}
+.hero .timer .l{display:flex;gap:12px;align-items:center}
+.hero .timer .l .ico{width:24px;height:24px;color:var(--L);stroke-width:1.6}
+.hero .timer .l p{font-size:13px;line-height:18px;color:#f5f5f5}
+.hero .clock{display:flex;font-size:36px;font-weight:300;line-height:48px;font-variant-numeric:tabular-nums}
+.hero .clock span{display:inline-block;width:43px;text-align:center}.hero .clock i{font-style:normal;width:8px;text-align:center}
+.hero h2{margin-top:20px;max-width:324px;font-size:26px;line-height:34px;font-weight:700;letter-spacing:-.3px}
+.game{display:block;margin:40px 20px 0;position:relative;border-radius:12px;background:var(--game);padding:12px 24px}
+.game .in{position:relative;display:flex;flex-direction:column;align-items:center;background:#000;padding:18px 20px 12px;color:#fff;text-align:center}
+.game .in p{font-size:22px;font-weight:700;line-height:30px;white-space:nowrap}.game .in p b{color:var(--game);font-weight:700}
+.game .play{margin-top:14px;display:inline-flex;align-items:center;justify-content:center;width:137px;height:44px;border-radius:22px;background:#4caf50;color:#111;font-size:24px;font-weight:600;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.game .px{position:absolute;right:16px;top:-24px;width:85px;height:85px;transform:rotate(-14deg);background:conic-gradient(from 45deg,#5b6ee8 25%,#c7cdf7 0 50%,#5b6ee8 0 75%,#c7cdf7 0);background-size:15px 15px;clip-path:polygon(20% 0,80% 0,80% 20%,100% 20%,100% 80%,80% 80%,80% 100%,20% 100%,20% 80%,0 80%,0 20%,20% 20%);filter:drop-shadow(2px 2px 0 #223)}
+.sec{padding:40px 20px 20px}
+.sec h2{font-size:22px;font-weight:700;line-height:28px;color:var(--ink)}
+.sec .items{margin-top:24px}
+.row{display:flex;gap:16px;width:100%;margin-bottom:20px}
+.row .thumb{flex:0 0 140px;width:140px;height:105px}
+.row .t{flex:1;min-width:0}
+.row h3{font-size:18px;font-weight:700;line-height:24px;color:var(--ink)}
+.row p{margin-top:4px;font-size:16px;line-height:24px;color:var(--ink)}
+.row .rate{margin-top:10px}
+.car{margin-top:24px}
+.card{width:240px}
+.card .thumb{width:240px;height:180px}
+.card h3{margin-top:16px;font-size:18px;font-weight:700;line-height:24px;color:var(--ink)}
+.card p{margin-top:4px;font-size:16px;line-height:24px;color:var(--ink)}
+.card .rate{margin-top:16px}
+.reco{padding:40px 0 0}
+.reco .hd{display:flex;align-items:center;gap:8px;padding:0 20px;position:relative}
+.reco .hd p{font-size:22px;font-weight:700;line-height:28px}
+.reco .hd .tag{font:600 11px/1 Pretendard;color:#fff;background:var(--hlink);padding:4px 7px;border-radius:999px;position:relative;top:3px}
+.reco .hd .i{margin-left:auto;width:24px;height:24px;color:var(--rb3)}
+.reco .hd .i .ico{width:24px;height:24px}
+.reco .pop{display:none;position:absolute;right:20px;top:calc(100% + 13px);z-index:5;width:240px;padding:12px 14px;border-radius:6px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);font-size:14px;line-height:22px;color:var(--rb6)}
+.reco .pop.show{display:block}
+.reco .pop .x{position:absolute;top:8px;right:8px;width:16px;height:16px;color:var(--rb6)}.reco .pop .x .ico{width:16px;height:16px}
+.reco .box{margin-top:12px;padding:20px 20px 28px;background:var(--rb1)}
+.reco .in{display:flex;flex-direction:column;align-items:center;padding:28px 20px;border-radius:6px;background:var(--rb2)}
+.reco .in .ill{width:120px;height:110px;border-radius:12px;background:radial-gradient(circle at 50% 40%,#fff 0 26%,transparent 27%),linear-gradient(135deg,#cfd4ff,#ffd9c7)}
+.reco .in p{margin-top:20px;font-size:18px;font-weight:500;line-height:26px;text-align:center}
+.reco .in .btn{margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px;width:320px;height:48px;border-radius:4px;background:var(--rb);color:#fff;font-size:16px;font-weight:600}
+.reco .in .btn .ico{width:20px;height:20px;color:var(--rb6)}
+.upc{padding-top:40px}
+.upc .hd{display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 20px;border-bottom:1px solid var(--rb2);position:relative}
+.upc .hd h2{font-size:22px;font-weight:700;line-height:28px}
+.upc .hd .s{margin-top:8px;font-size:14px;font-weight:600;line-height:22px}
+.upc .hd .bell{width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}
+.upc .hd .bell .ico{width:24px;height:24px}
+.upc .hd .tip{position:absolute;right:20px;top:calc(100% - 9px);z-index:4;height:34px;padding:6px 10px;border-radius:4px;background:var(--mbp);color:#fff;font-size:14px;font-weight:500;line-height:22px;white-space:nowrap}
+.upc .hd .tip::before{content:"";position:absolute;right:16px;top:-6px;border:6px solid transparent;border-bottom-color:var(--mbp);border-top:0}
+.upc .it{position:relative}
+.upc .band{position:relative;height:200px;display:flex;align-items:center;justify-content:center}
+.upc .dday{width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;font-weight:700;line-height:22px}
+.upc .img{position:relative;height:300px;display:flex;align-items:center;justify-content:center}
+.upc .img p{position:relative;z-index:1;font-size:24px;font-weight:700;line-height:30px;color:var(--rb)}
+.upc .img .ph{position:absolute;inset:0;opacity:.9}
+.upc h3{margin:22px 20px 0;font-size:22px;font-weight:700;line-height:30px;color:var(--ink)}
+.upc .by{display:flex;gap:25px;margin:40px 20px 0;font-size:12px;line-height:18px}
+.upc .by .ed{font-size:12px}
+.upc .it+.it{margin-top:40px}
+.slider{margin-top:60px;position:relative}
+.slider .bar{display:flex;height:6px}.slider .bar b{flex:1;background:var(--rb3)}.slider .bar b.on{background:var(--ink)}
+.slider .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.slider .track::-webkit-scrollbar{display:none}
+.slider .track>div small{display:block;margin-top:8px}
+.slider .track>div{flex:0 0 100%;scroll-snap-align:start;height:225px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;text-align:center;padding:24px}
+.slider .pg{position:absolute;right:16px;bottom:16px;height:28px;padding:2px 14px;border-radius:999px;background:var(--ink2);color:#fff;font-size:16px;line-height:24px}
+.slider .pg b{font-weight:700}
+.past{padding-top:60px}
+.past .hd{display:flex;align-items:center;justify-content:space-between;padding:0 20px 16px;border-bottom:1px solid var(--rb2)}
+.past .hd h2{font-size:22px;font-weight:700;line-height:28px}
+.past .it{display:flex;gap:16px;margin:0 20px;padding:20px 0;border-bottom:1px solid var(--rb2)}
+.past .it:last-child{border-bottom:0}
+.past .thumb{flex:0 0 120px;width:120px;height:90px}
+.past .t{flex:1;min-width:0}
+.past h3{font-size:18px;font-weight:700;line-height:24px;color:var(--ink)}
+.past .by{display:flex;gap:25px;margin-top:12px;font-size:12px;line-height:18px}
+.past .more{display:flex;align-items:center;justify-content:center;height:48px;margin:0 20px;border:1px solid var(--rb2);border-radius:4px;font-size:14px;font-weight:600}
+
+/* ── 푸터 ── */
+.foot{margin-top:100px;padding:40px 20px;background:var(--rb);color:#fff}
+.foot .biz{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:20px}
+.foot .biz .ico{width:16px;height:16px}
+.foot .g{margin-top:40px}
+.foot .g h5{padding-bottom:10px;border-bottom:.5px solid rgba(255,255,255,.6);font-size:14px;font-weight:600;line-height:20px}
+.foot .g a{display:block;margin-top:8px;font-size:14px;line-height:20px}
+.foot .g a:first-of-type{margin-top:16px}
+.foot .apps{display:flex;gap:8px;margin-top:28px}
+.foot .apps a{flex:1;display:flex;align-items:center;gap:10px;height:48px;padding:12px 16px;border-radius:4px;background:#fff;color:#141414;font-size:16px;font-weight:500}
+.foot .apps .ico{width:22px;height:22px}
+
+/* ── 전체 노트 ── */
+.list-page{padding:28px 20px 0}
+.list-page h1{font-size:26px;font-weight:700;line-height:34px}
+.sbox{display:flex;align-items:center;gap:8px;height:48px;margin-top:20px;padding:0 16px;border-radius:1000px;background:var(--rb1);border:1px solid var(--rb1)}
+.sbox .ico{width:24px;height:24px;color:var(--rb5)}
+.sbox input{flex:1;min-width:0;background:transparent;border:0;outline:0;font-size:16px;line-height:24px}
+.sbox input::placeholder{color:var(--rb5)}
+.kwhd{display:flex;align-items:center;gap:6px;margin-top:40px}
+.kwhd .ico{width:18px;height:18px}
+.kwhd p{font-size:20px;font-weight:700;line-height:26px}.kwhd p b{color:var(--orange);font-weight:700}
+.kws{margin-top:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.kws .kwrow{display:flex;gap:8px;width:max-content}
+.kws .kwrow+.kwrow{margin-top:10px}
+.kws::-webkit-scrollbar{display:none}
+.kws button{height:32px;padding:0 10px;border-radius:4px;border:1px solid var(--rb1);background:var(--rb1);font-size:14px;line-height:20px;white-space:nowrap;color:var(--ink)}
+.kws button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.npbanner{display:flex;align-items:center;justify-content:space-between;height:122px;margin-top:40px;padding:0 20px 0 24px;background:#2a2a2a;color:#fff;border-radius:2px}
+.npbanner p{font-size:18px;font-weight:700;line-height:26px}.npbanner p b{color:#5aa9ff;font-weight:700}
+.npbanner .go{margin-top:12px;font-size:14px;color:#ddd}
+.npbanner .lg{width:92px;height:72px;border-radius:4px;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font:700 13px/1.1 Georgia,serif;text-align:center;transform:rotate(-6deg)}
+.cnt{display:flex;align-items:center;justify-content:space-between;margin-top:40px}
+.cnt p{font-size:18px;font-weight:500;line-height:24px}.cnt p b{color:var(--orange);font-weight:700}
+.sortbtn{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;line-height:20px;position:relative}
+.sortbtn .ico{width:16px;height:16px;color:var(--rb5)}
+.dd{position:absolute;right:0;top:calc(100% + 13px);z-index:20;width:128px;padding:4px;border-radius:4px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:4px}
+.dd button{height:36px;padding:0 12px;text-align:left;font-size:14px;font-weight:400;border-radius:4px}
+.dd button.on{font-weight:600;background:var(--rb1)}
+.filt{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:36px;padding:8px 16px;border-radius:999px;border:1px solid var(--rb3);background:#fff;font-size:14px;font-weight:500;line-height:20px}
+.chip b{color:#ff8353;font-weight:700}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.views{display:flex;gap:16px}
+.views button{width:24px;height:24px;color:var(--rb4)}.views button.on{color:var(--ink)}
+.nlist{margin-top:20px}
+.nrow{position:relative;display:flex;gap:16px;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--rb2)}
+.nrow .thumb{flex:0 0 140px;width:140px;height:105px}
+.nrow .thumb .bm{width:44px;height:44px}
+.nrow .t{flex:1;min-width:0;padding-top:5px;display:flex;flex-direction:column}
+.nrow .t h3{font-size:16px;font-weight:700;line-height:24px;color:var(--ink);word-break:keep-all}
+.nrow .by{display:flex;align-items:center;gap:8px;margin-top:auto;font-size:12px;line-height:18px}
+.nrow .by .sep{color:rgba(0,0,0,.3)}
+.nrow .by .au{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ngrid{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:24px 12px}
+.ngrid .thumb{width:100%;aspect-ratio:4/3}
+.ngrid h3{margin-top:10px;font-size:15px;font-weight:700;line-height:22px}
+.ngrid .by{display:flex;gap:8px;margin-top:6px;font-size:12px}
+.pager{display:flex;justify-content:center;gap:8px;margin-top:40px}
+.pager button{width:36px;height:36px;border-radius:8px;background:var(--rb1);font-size:16px;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.pager button.on{background:var(--rb);color:#f5f5f5}
+.pager button.nav{background:var(--rb3)}.pager button.nav .ico{width:18px;height:18px}
+.pager button:disabled{opacity:.4}
+.empty{padding:60px 0;text-align:center;color:var(--rb5);font-size:14px}
+
+/* ── 노트 상세 ── */
+.note{padding:0 20px}
+.note .tab{display:inline-flex;align-items:center;height:42px;margin-top:58px;padding:10px 14px;border-radius:8px 8px 0 0;background:var(--ink);color:var(--L);font-size:16px;font-weight:700}
+.note .tline{border-top:5px solid var(--ink)}
+.note .tline.nt{margin-top:58px}
+.note h1{padding-top:24px;font-size:32px;font-weight:700;line-height:44px;letter-spacing:-.2px;color:var(--ink);word-break:keep-all}
+.note .meta{position:relative;display:flex;align-items:center;gap:10px;margin-top:74px;padding-bottom:12px;border-bottom:1px solid var(--rb3);font-size:13px;line-height:19.5px;color:var(--ink)}
+.note .meta .bar{color:var(--rb5);margin:0 14px 0 10px}
+.note .meta .dt{margin-left:14px}
+.note .meta .seal{position:absolute;right:10px;top:-19px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c9bdff,#a48dff 60%,#8b74f0);color:#fff;font:600 13px/1 Georgia,serif;display:flex;align-items:center;justify-content:center;letter-spacing:-1px;box-shadow:0 0 0 2px #fff inset}
+.note .audio{display:flex;align-items:center;gap:10px;height:58px;border-bottom:1px solid var(--rb2)}
+.note .audio .pl{width:32px;height:32px;border-radius:50%;background:var(--rb);color:#fff;display:flex;align-items:center;justify-content:center}
+.note .audio .pl .ico{width:20px;height:20px;fill:#fff;stroke:none;margin-left:2px}
+.note .audio .pl.on{background:var(--orange)}
+.note .audio .beta{height:22px;padding:2px 6px;border-radius:4px;background:var(--hl);color:var(--hlink);font-size:12px;font-weight:600;line-height:18px}
+.note .audio .lb{font-size:14px;font-weight:500;color:var(--rb6)}
+.note .audio .du{font-size:14px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.note .audio .inf{margin-left:auto;width:20px;height:20px;color:var(--rb4)}.note .audio .inf .ico{width:20px;height:20px}
+.note .author{display:flex;align-items:center;margin-top:60px}
+.note .author .av{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 50% 38%,#fde3c9 0 30%,transparent 31%),linear-gradient(#5b5bd6,#5b5bd6);border:2px solid var(--ink);position:relative;overflow:hidden}
+.note .author .av::after{content:"";position:absolute;left:8px;right:8px;bottom:-6px;height:16px;border-radius:50% 50% 0 0;background:#2d2d2d}
+.note .author .ln{width:103px;height:2px;background:var(--ink)}
+.article{position:relative;padding:34px 0 40px 40px;font-size:18px;line-height:34.2px;color:var(--ink);word-break:keep-all}
+.article .by{font-weight:700;margin-bottom:34px}
+.article p{margin-bottom:34px}
+.article p.ph{color:var(--ink)}
+.article h2{margin:54px 0 4px;font-size:16px;font-weight:700;color:var(--orange)}
+.article h3{font-size:24px;line-height:38px;font-weight:700;margin-bottom:30px}
+.article h4{font-size:19px;line-height:30px;font-weight:700;margin:40px 0 20px}
+.article blockquote{margin:0 0 34px;padding:20px;border-left:3px solid var(--ink);background:var(--rb0);font-size:16px;line-height:30px}
+.article blockquote cite{display:block;margin-top:10px;font-size:13px;line-height:20px;color:var(--rb6);font-style:normal}
+.article .fn{margin:-22px 0 34px;font-size:13px;line-height:20px;color:var(--rb6)}
+.article figure{margin:0 0 40px -40px}
+.article figure .thumb{height:240px}
+.article figcaption{margin-top:10px;font-size:13px;line-height:20px;color:var(--rb6)}
+.article mark{background:var(--hl);color:inherit;padding:2px 0;box-decoration-break:clone;-webkit-box-decoration-break:clone;cursor:pointer}
+.article mark.flash{animation:flash 1.6s ease-out 1}
+@keyframes flash{0%{background:#cdbcff}100%{background:var(--hl)}}
+.article .share24{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;margin:10px 0 0 -40px;border:1px solid var(--ink);border-radius:6px;font-size:16px;font-weight:700}
+.selpop{position:absolute;z-index:40;display:flex;border-radius:6px;overflow:hidden;background:#444;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.selpop button{min-height:48px;padding:12px 16px;color:#fff;font-size:16px;font-weight:500;white-space:nowrap}
+.selpop button+button{border-left:1px solid rgba(255,255,255,.12)}
+.copyright{padding:0 0 30px;font-size:12px;line-height:18px;color:var(--rb5)}
+.blk{border-top:8px solid var(--rb0);padding:28px 20px}
+.blk>h3{font-size:20px;font-weight:700;line-height:28px}
+.rating{text-align:center}
+.rating p{margin-top:4px;font-size:14px;color:var(--rb5)}
+.stars{display:flex;justify-content:center;gap:6px;margin-top:12px}
+.stars button{font-size:36px;line-height:1;color:var(--rb3)}.stars button.on{color:#ffb800}
+.chat .hd{display:flex;justify-content:space-between;align-items:center}
+.chat .clock{font-size:26px;font-weight:300;font-variant-numeric:tabular-nums}
+.chat .sub{margin-top:6px;font-size:14px;color:var(--rb6)}
+.chat .rew{display:flex;gap:10px;margin:16px 0}
+.chat .rew div{flex:1;padding:12px;border-radius:8px;background:var(--rb0);font-size:13px;line-height:20px}
+.chat .rew b{display:block;font-size:15px;color:var(--orange)}
+.chat .compose{margin-top:12px;padding:14px;border:1px solid var(--rb2);border-radius:8px}
+.chat .compose .me{font-size:13px;font-weight:700}
+.chat textarea{width:100%;min-height:70px;margin-top:6px;border:0;outline:0;resize:none;font-size:15px;line-height:1.6}
+.chat .crow{display:flex;justify-content:space-between;align-items:center}
+.chat .crow .n{font-size:12px;color:var(--rb5)}
+.chat .crow .reg{height:36px;padding:0 14px;border-radius:4px;background:var(--ink);color:#fff;font-size:14px;font-weight:700}
+.chat .note-s{margin-top:10px;font-size:12px;line-height:18px;color:var(--rb5)}
+.chat .cm{padding:16px 0;border-bottom:1px solid var(--rb2)}
+.chat .cm .who{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700}
+.chat .cm .best{padding:2px 5px;border-radius:3px;background:var(--orange);color:#fff;font-size:10px}
+.chat .cm .when{font-size:12px;font-weight:400;color:var(--rb5)}
+.chat .cm p{margin:8px 0;font-size:15px;line-height:24px}
+.chat .cm .acts{display:flex;gap:16px;font-size:13px;color:var(--rb5)}
+.chat .cm .cup.on{color:var(--orange);font-weight:700}
+.chat .alarm{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:14px;border-radius:8px;background:var(--rb0);font-size:14px}
+.chat .alarm button{color:var(--orange);font-weight:700}
+.morebtn{display:flex;align-items:center;justify-content:center;width:100%;height:48px;margin-top:16px;border:1px solid var(--rb2);border-radius:6px;font-size:14px;font-weight:700}
+.rel .hscroll{margin-top:16px}
+.sel-item{width:220px}
+.sel-item .thumb{width:220px;height:150px}
+.sel-item h4{margin-top:10px;font-size:16px;font-weight:700}
+.sel-item p{margin-top:4px;font-size:13px;color:#555}
+.sel-item .shot{margin-top:6px;font-size:12px;font-weight:700;color:var(--orange)}
+.fixshare{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:35;display:flex;align-items:center;gap:12px;width:calc(100% - 40px);max-width:360px;height:56px;padding:0 20px 0 10px;border-radius:999px;background:var(--rb);color:#fff;font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.fixshare b{color:var(--purple);font-weight:600}
+.fixshare .ic{width:36px;height:36px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#fff}
+.fixshare .ic .ico{width:20px;height:20px}
+
+/* ── 문장스크랩 ── */
+.scrap{padding:28px 0 0}
+.scrap h2.ttl{padding:0 20px;font-size:26px;font-weight:700;line-height:32px;color:var(--ink)}
+.scrap .tabs{display:flex;margin:28px 20px 0;border-bottom:.5px solid var(--rb3)}
+.scrap .tabs button{flex:1;height:48px;margin-bottom:-1px;font-size:18px;line-height:26px;color:var(--rb5);border-bottom:1.67px solid transparent}
+.scrap .tabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+.scrap .sbox{margin:24px 20px 0}
+.scrap .sort{display:flex;justify-content:flex-end;margin:22px 20px 0}
+.scrap .grp{margin-top:36px}
+.scrap .grp h3{margin:0 20px 20px;font-size:20px;font-weight:700;line-height:30px;color:var(--ink);word-break:keep-all}
+.scrap .cards{display:flex;gap:16px;overflow-x:auto;padding:0 20px 12px;scroll-snap-type:x proximity;scrollbar-width:none}
+.scrap .cards::-webkit-scrollbar{display:none}
+.scard{position:relative;flex:0 0 300px;width:300px;height:442px;border-radius:6px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;flex-direction:column;scroll-snap-align:start}
+.scard .top{flex:1;min-height:0;overflow:hidden;padding:20px 20px 0;background:var(--skin,#f2f2f2);color:var(--skin-fg,#191919);display:flex;flex-direction:column}
+.scard .q{flex:0 1 auto;min-height:0;font-weight:600;white-space:pre-wrap;word-break:keep-all;overflow:hidden}
+.scard .q.s{font-size:22px;line-height:36px;max-height:252px}.scard .q.m{font-size:18px;line-height:32px;max-height:256px}.scard .q.l{font-size:16px;line-height:30px;max-height:270px}
+.scard .full{align-self:flex-end;margin-top:auto;margin-bottom:6px;font-size:14px;font-weight:500;text-decoration:underline;color:rgba(0,0,0,.5)}
+.scard .memo{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(0,0,0,.2);font-size:13px;line-height:20px;color:rgba(0,0,0,.65)}
+.scard .memo b{font-weight:700;margin-right:6px}
+.scard .ts{height:24px;padding:0 20px 10px;background:var(--skin,#f2f2f2);color:var(--skin-fg,#191919);font-size:10px;line-height:14px;letter-spacing:-.02px}
+.scard .src{display:flex;align-items:center;gap:12px;height:56px;padding:0 16px;background:var(--skin,#f2f2f2);color:var(--skin-fg,#191919)}
+.scard .src .mini{flex:0 0 44px;width:44px;height:30px;border:.5px solid var(--ink);position:relative;overflow:hidden}
+.scard .src .mini .ph{background:var(--ph,#ccc)}
+.scard .src span{font-size:12px;font-weight:500;line-height:18px}
+.scard .acts{position:relative;display:flex;align-items:center;gap:8px;height:52px;padding:0 12px;background:#fff}
+.scard .acts button{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.scard .acts button:active{background:var(--rb1)}
+.scard .acts .del{margin-left:auto}
+.scard.skin-gray_basic .top,.scard.skin-gray_basic .ts,.scard.skin-gray_basic .src{background:radial-gradient(circle at 70% 30%,transparent 0 60px,rgba(0,0,0,.08) 61px 74px,transparent 75px),#e9e9e9}
+.scard.skin-yellow_basic .top,.scard.skin-yellow_basic .ts,.scard.skin-yellow_basic .src{background:linear-gradient(135deg,#ffd166 0 50%,#ffb347 50%),#ffd166;background-size:60px 60px}
+.scard.skin-green_basic .top,.scard.skin-green_basic .ts,.scard.skin-green_basic .src{background:radial-gradient(circle at 75% 25%,#9fe99e 0 40px,transparent 41px),#2eb872;color:#fff;--skin-fg:#fff}
+.scard.skin-blue_ice .top,.scard.skin-blue_ice .ts,.scard.skin-blue_ice .src{background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.7) 0 18px,transparent 19px),radial-gradient(circle at 70% 60%,rgba(255,255,255,.5) 0 28px,transparent 29px),radial-gradient(circle at 40% 85%,rgba(255,255,255,.6) 0 14px,transparent 15px),#5aa9ff}
+.scard.skin-pink_bubble .top,.scard.skin-pink_bubble .ts,.scard.skin-pink_bubble .src{background:repeating-linear-gradient(0deg,#ff5fcf 0 6px,#ff8ad9 6px 12px)}
+.skinpop{position:absolute;left:44px;top:46px;z-index:20;width:180px;padding:12px 14px;border-radius:6px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:8px}
+.skinpop div{display:flex;gap:8px}
+.skinpop button{width:24px;height:24px;border-radius:2px;border:1px solid rgba(0,0,0,.08)}
+.skinpop button.on{outline:2px solid var(--ink);outline-offset:1px}
+.sk-gray{background:#f2f2f2}.sk-orange{background:#ff7c55}.sk-tan{background:#e1c294}.sk-green{background:#b6ffaf}.sk-blue{background:#9cbbff}
+.sk-gray_basic{background:radial-gradient(circle,transparent 0 5px,#999 6px 8px,transparent 9px),#e9e9e9}
+.sk-yellow_basic{background:linear-gradient(135deg,#ffd166 0 50%,#ffb347 50%)}
+.sk-green_basic{background:radial-gradient(circle at 70% 30%,#9fe99e 0 5px,transparent 6px),#2eb872}
+.sk-blue_ice{background:radial-gradient(circle at 30% 40%,#fff 0 4px,transparent 5px),#5aa9ff}
+.sk-pink_bubble{background:repeating-linear-gradient(0deg,#ff5fcf 0 3px,#ff8ad9 3px 6px)}
+
+/* ── 마이페이지 ── */
+.my{padding:28px 20px 0}
+.my h2.ttl{font-size:26px;font-weight:700;line-height:38px;color:var(--ink2)}
+.my .prof{margin-top:24px;padding:24px 24px 32px;border-radius:4px 4px 0 0;background:var(--rb);color:#fafafa}
+.my .prof .hi{display:flex;align-items:center;gap:4px;font-size:24px;font-weight:700;line-height:32px}
+.my .prof .hi b{color:#fff}
+.my .prof .hi .ico{width:20px;height:20px;color:#aaa;margin-left:4px}
+.my .prof .em{margin-top:4px;font-size:18px;line-height:24px;color:var(--rb6)}
+.my .prof .plan{display:inline-flex;align-items:center;height:28px;margin-top:24px;padding:0 12px;border-radius:1000px;background:var(--banner);color:#fff;font-size:14px;font-weight:500}
+.my .prof .mem{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:8px 0;border-bottom:.5px solid rgba(255,255,255,.4);font-size:20px;line-height:26px}
+.my .prof .mem .ico{width:24px;height:24px}
+.my .prof .lo{display:inline-flex;align-items:center;gap:4px;margin-top:16px;font-size:14px;font-weight:500;color:var(--rb5)}
+.my .prof .lo .ico{width:20px;height:20px}
+.my .stats{display:flex}
+.my .stats a{flex:1;display:flex;align-items:center;justify-content:space-between;height:54px;padding:14px 24px;border:.5px solid var(--rb3)}
+.my .stats a:first-child{border-radius:0 0 0 4px}.my .stats a:last-child{border-radius:0 0 4px 0;margin-left:-.5px}
+.my .stats span{font-size:14px;color:var(--rb6)}.my .stats b{font-size:18px;font-weight:500;color:var(--ink)}
+.my .tabs{display:flex;align-items:flex-end;min-height:40px;margin-top:34px;border-bottom:1.67px solid var(--rb3)}
+.my .tabs button{margin-bottom:-2px;padding:10px 14px;font-size:14px;line-height:14px;color:rgba(0,0,0,.87);border-bottom:2px solid transparent;white-space:nowrap}
+.my .tabs button.on{font-weight:700;color:rgba(0,0,0,.95);border-bottom-color:var(--ink)}
+.my .sub{display:flex;min-height:40px;margin-top:24px;border-bottom:.5px solid #d4d4d5;overflow-x:auto;scrollbar-width:none}
+.my .sub::-webkit-scrollbar{display:none}
+.my .sub button{flex:0 0 auto;padding:10px 14px;font-size:14px;line-height:14px;color:rgba(0,0,0,.87);white-space:nowrap;border-bottom:.5px solid transparent;margin-bottom:-.5px}
+.my .sub button.on{font-weight:700;color:rgba(0,0,0,.95);background:#fff;border:.5px solid #d4d4d5;border-bottom-color:#fff;border-radius:4px 4px 0 0}
+.my .box{border:.5px solid #d4d4d5;border-top:0;border-radius:0 0 4px 4px;margin-bottom:14px}
+.my .filt2{display:flex;align-items:center;padding:16px 4px;background:var(--rb0)}
+.my .filt2 button{padding:0 16px;font-size:14px;line-height:22px;color:var(--rb6)}
+.my .filt2 button.on{font-weight:600;color:var(--ink)}
+.my .filt2 i{font-size:12px;color:var(--rb3);font-style:normal}
+.my .cnt2{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 0}
+.my .cnt2 p{font-size:16px;font-weight:500;line-height:22px}.my .cnt2 p b{color:var(--orange);font-weight:700}
+.my .lit{margin:0 20px;padding-bottom:16px;margin-bottom:20px;border-bottom:.5px solid var(--rb3)}
+.my .lit .dt{margin-top:16px;font-size:14px;font-weight:500;line-height:20px;color:var(--rb6)}
+.my .lit .g{display:grid;grid-template-columns:140px 1fr;gap:12px 16px;margin-top:12px}
+.my .lit .thumb{width:140px;height:105px;background:var(--rb3)}
+.my .lit .thumb .bm{left:0;top:0;width:44px;height:44px}
+.my .lit .t{display:flex;flex-direction:column;padding-top:3px}
+.my .lit h3{font-size:16px;font-weight:700;line-height:24px;color:var(--ink);word-break:keep-all}
+.my .lit .by{display:flex;align-items:center;gap:8px;margin-top:auto;font-size:12px;line-height:18px}
+.my .lit .by i{color:rgba(0,0,0,.3);font-style:normal}
+.my .lit.bmrow .g{margin-top:16px}
+.my .lit.bmrow .t{padding-top:0}
+.my .lit .pr{grid-column:1/3;display:flex;align-items:center;gap:10px}
+.my .lit .pr .bar{flex:1;height:8px;background:var(--rb2);overflow:hidden}
+.my .lit .pr .bar i{display:block;height:100%;background:var(--C)}
+.my .lit .pr span{width:36px;text-align:right;font-size:14px;line-height:20px;color:var(--rb5)}
+.my .pager{margin:30px 0 24px}
+.my .panel{padding:24px 16px 32px}
+.my .panel h4{font-size:16px;font-weight:700;margin-bottom:12px}
+.my .panel .kv{display:flex;justify-content:space-between;padding:12px 0;border-bottom:.5px solid var(--rb2);font-size:14px}
+.my .panel .kv span{color:var(--rb6)}
+.my .stampcard{margin-top:12px;padding:20px;border:.5px solid var(--rb3);border-radius:6px}
+.my .stampcard .dots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.my .stampcard .dots i{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--rb3);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;color:var(--rb5)}
+.my .stampcard .dots i.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.my .stamp-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:.5px solid var(--rb2);font-size:15px}
+.my .stamp-row button{height:32px;padding:0 12px;border-radius:4px;background:var(--ink);color:#fff;font-size:13px;font-weight:600}
+
+/* ── 검색 ── */
+.srch{min-height:100vh;background:var(--ink);color:#fff}
+.srch .land{padding:96px 20px 0;text-align:center}
+.srch .land .lgw{display:flex;align-items:center;justify-content:center;gap:8px}
+.srch .land .lgw .logo{font-size:42px;line-height:42px}
+.srch .land .lgw span{font-size:24px;line-height:32px}
+.srch .sin{position:relative;margin-top:24px}
+.srch .sin .ico{position:absolute;left:20px;top:14px;width:20px;height:20px;color:#fafafa}
+.srch .sin input{width:100%;height:48px;padding:10px 44px 10px 60px;border-radius:9999px;background:#444;border:0;outline:0;color:#fff;font-size:16px}
+.srch .sin input::placeholder{color:#fff;opacity:.9}
+.srch .sin .clr{position:absolute;right:14px;top:16px;width:16px;height:16px;color:#fff}
+.srch .sin .clr .ico{position:static;width:16px;height:16px}
+.srch .sug{margin-top:40px;font-size:16px;color:var(--rb6)}
+.srch .sg{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.srch .sg a{display:flex;align-items:center;justify-content:center;height:48px;border-radius:4px;color:var(--ink);font-size:16px}
+.srch .res-h{background:var(--rb);padding:16px 8px 0;height:50px;display:flex;justify-content:center;align-items:center;gap:8px}
+.srch .res-h .logo{font-size:30px;line-height:34px}.srch .res-h span{font-size:18px;line-height:24px}
+.srch .res-f{background:var(--rb);padding:28px 20px 16px;border-bottom:1px solid #3a3a3a}
+.srch .res{background:#fff;color:var(--ink2);padding:0 20px 40px}
+.srch .ri{padding:24px 0;border-bottom:1px solid var(--rb2)}
+.srch .ri .top{display:flex;gap:16px}
+.srch .ri .thumb{flex:0 0 120px;width:120px;height:90px}
+.srch .ri h3{font-size:20px;font-weight:700;line-height:26px}
+.srch .ri .sum{margin-top:16px;padding:16px 20px;background:var(--rb1);font-size:16px;line-height:24px}
+.srch .ri .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.srch .ri .tags a{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:9999px;border:1px solid var(--rb3);font-size:14px;color:#444}
+.srch .none{padding:60px 20px;text-align:center;color:var(--rb5)}
+
+/* ── 셀렉션 / 플레이 / 기타 ── */
+.page{padding:28px 20px 0}
+.page h1{font-size:26px;font-weight:700;line-height:34px}
+.page .lead{margin-top:12px;font-size:15px;line-height:24px;color:var(--rb6)}
+.page .shots{margin-top:20px;padding:20px;border-radius:8px;background:var(--rb0)}
+.page .shots p{font-size:14px;color:var(--rb6)}.page .shots b{display:block;font-size:28px;font-weight:700;margin-top:4px}
+.page .stabs{display:flex;gap:16px;margin-top:28px;border-bottom:1px solid var(--rb2)}
+.page .stabs button{padding:10px 4px;font-size:16px;color:var(--rb5);border-bottom:2px solid transparent;margin-bottom:-1px}
+.page .stabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+.page .cats{display:flex;gap:8px;margin-top:16px;overflow-x:auto;scrollbar-width:none}
+.page .cats button{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--rb3);font-size:14px;white-space:nowrap}
+.page .cats button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.selc{margin-top:24px;padding-bottom:24px;border-bottom:1px solid var(--rb2)}
+.selc .due{font-size:12px;color:var(--orange);font-weight:600}
+.selc .thumb{margin-top:8px;width:100%;height:200px;border-radius:6px}
+.selc .cat{margin-top:12px;font-size:12px;color:var(--rb5)}
+.selc h3{margin-top:4px;font-size:18px;font-weight:700}
+.selc p{margin-top:4px;font-size:15px}
+.selc .meta{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
+.selc .meta b{color:var(--orange)}
+.selc .meta i{font-style:normal;padding:2px 6px;border:1px solid var(--rb3);border-radius:3px;color:var(--rb6)}
+.selc .more{display:flex;align-items:center;justify-content:center;height:44px;margin-top:12px;border:1px solid var(--ink);border-radius:4px;font-size:14px;font-weight:600}
+.play .hero2{margin-top:20px;padding:24px;border-radius:12px;background:#111;color:#fff}
+.play .hero2 p{font-size:14px;color:#bbb}.play .hero2 h3{margin-top:8px;font-size:18px;font-weight:700;line-height:26px}
+.play .gm{display:flex;gap:16px;align-items:center;margin-top:16px;padding:16px;border-radius:12px;border:1px solid var(--rb2)}
+.play .gm .ic{width:56px;height:56px;border-radius:12px;background:var(--gamebadge);display:flex;align-items:center;justify-content:center;font-size:24px}
+.play .gm h4{font-size:16px;font-weight:700}.play .gm p{margin-top:4px;font-size:13px;color:var(--rb6)}
+.play .live{display:flex;align-items:center;gap:8px;margin-top:24px;padding:12px 16px;border-radius:999px;background:var(--rb0);font-size:13px}
+.play .live b{color:#e0245e}
+.faq .q{padding:16px 0;border-bottom:1px solid var(--rb2);font-size:15px;font-weight:600}
+.faq .a{padding:0 0 16px;font-size:14px;line-height:22px;color:var(--rb6)}
+
+/* ── 공통 오버레이: 모달 / 토스트 / 확인 ── */
+.modal{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal .dim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.modal .box{position:relative;width:100%;max-width:360px;padding:24px 20px 20px;border-radius:8px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.modal .box h4{font-size:18px;font-weight:700;text-align:center}
+.modal .box .x{position:absolute;top:14px;right:14px;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.modal .box .x .ico{width:24px;height:24px;stroke-width:2}
+.modal .ta{position:relative;margin-top:20px;padding:16px;border-radius:4px;background:var(--rb1)}
+.modal .ta textarea{width:100%;min-height:120px;border:0;outline:0;background:transparent;resize:none;font-size:16px;line-height:24px}
+.modal .ta .n{position:absolute;right:16px;bottom:12px;font-size:14px;color:var(--rb5)}.modal .ta .n b{color:var(--ink)}
+.modal .primary{display:flex;align-items:center;justify-content:center;width:100%;height:56px;margin-top:20px;border-radius:4px;background:var(--ink);color:#fff;font-size:16px;font-weight:600}
+.modal .primary:disabled{background:var(--rb2);color:var(--rb5)}
+.modal .quote{margin-top:16px;font-size:16px;line-height:30px;font-weight:600;word-break:keep-all;max-height:50vh;overflow:auto}
+.modal .src{margin-top:16px;font-size:13px;color:var(--rb6)}
+.modal .btns{display:flex;gap:8px;margin-top:20px}
+.modal .btns button{flex:1;height:48px;border-radius:4px;font-size:15px;font-weight:600;background:var(--rb1)}
+.modal .btns button.danger{background:var(--ink);color:#fff}
+.modal .opts button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 4px;border-bottom:1px solid var(--rb2);font-size:16px}
+.modal .opts button.on{font-weight:700}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:200;max-width:calc(100% - 40px);padding:12px 18px;border-radius:999px;background:rgba(25,25,25,.95);color:#fff;font-size:14px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.proto-badge{position:fixed;left:8px;bottom:8px;z-index:300;padding:3px 8px;border-radius:4px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;letter-spacing:.3px;pointer-events:none}
+
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+window.LB_DATA = {"notes":[{"id":5018,"title":"마나 : 일상 속 ‘어쩔 수 없지’를 파고드는 생활용품 브랜드","ed":"K","author":"롱블랙","rating":4.4,"count":1120,"kw":["브랜딩","디자인"],"tags":["브랜드 스토리","디자인","혁신","일본 문화"],"summary":"마나는 150년 전 브러시 공장에서 시작해 일상 속 불편함을 해결하는 생활 디자인 브랜드로 성장했어요. 설명서 없이 직관적으로 사용할 수 있는 제품을 만들며, '어쩔 수 없음'을 혁신으로 바꾸고 있어요."},{"id":5017,"title":"iF 디자인 어워드 : 1만1000개 출품작을 전부 피드백하는 시상식이 일하는 법","ed":"L","author":"롱블랙","rating":4.3,"count":870,"kw":["디자인"],"tags":["디자인","이벤트","산업 트렌드"],"summary":"iF 디자인 어워드는 세계 3대 디자인 어워드 중 하나로, 1953년부터 72년째 계속되고 있어요. 디자인의 공정성과 객관성을 강조하며, 출품작 전부에 피드백을 제공해요."},{"id":5016,"title":"중국 하얼빈에서 마주한 자동차의 미래, 솔직히 기가 꺾였다","ed":"N","author":"이치카와 다이치","rating":4.1,"count":420,"kw":["테크","트렌드"],"series":"NewsPicks","date":"2026.10.14"},{"id":5015,"title":"언요크드","ed":"C","author":"롱블랙","rating":4.5,"count":1839,"sub":"오두막 플랫폼, 숲속 고립을 팔아 480억원을 모으다","kw":["사업 기획","여행"]},{"id":5014,"title":"여행의 기술","ed":"L","author":"롱블랙","rating":4.3,"count":1623,"sub":"알랭 드 보통이 전하는 ‘잘 떠나는 방법’","kw":["책 리뷰","여행"]},{"id":5013,"title":"쿨헌팅","ed":"K","author":"롱블랙","rating":4.4,"count":1555,"sub":"지적인 모험가들을 위한 잡지, 여행이 되다","kw":["콘텐츠","여행"]},{"id":5012,"title":"공간 감상 수업 4","ed":"B","author":"롱블랙","rating":4.5,"count":1538,"sub":"남의 취향은 이제 안녕, ‘내 관점’을 기르는 도시 여행법","kw":["공간","여행"]},{"id":5011,"title":"세컨찬스라이브러리","ed":"C","author":"롱블랙","rating":4.7,"count":1758,"sub":"도서관이 아이들에게 두 번째 기회를 줄 수 있다면","kw":["공간","인문"]},{"id":5010,"title":"케이티 패터슨","ed":"K","author":"롱블랙","rating":4.4,"count":993,"sub":"한강 책 100년간 봉인한 ‘미래 도서관’, 왜 기획했을까","kw":["예술","인문"]},{"id":5009,"title":"서울야외도서관","ed":"L","author":"롱블랙","rating":4.5,"count":1520,"sub":"“독서를 과시하면 어때?” 800만 명 모은 기획자의 질문","kw":["공간","마케팅"]},{"id":5008,"title":"요시나리 노부오","ed":"C","author":"롱블랙","rating":4.4,"count":1049,"sub":"공부를 싫어한 소년, 135만 명이 찾는 도서관을 만들다","kw":["공간","인문"]},{"id":5007,"title":"도서관에는 사람이 없는 편이 좋다","ed":"B","author":"롱블랙","rating":4.3,"count":1615,"sub":"인생의 유한성과 앎의 무한성에 대하여","kw":["인문","책 리뷰"]},{"id":5006,"title":"의정부미술도서관","ed":"K","author":"롱블랙","rating":4.6,"count":1863,"sub":"사서가 기획자의 시선으로 만든 도서관, 핫플레이스가 되다","kw":["공간","예술"]},{"id":5005,"title":"마크 로버","ed":"C","author":"롱블랙","rating":4.3,"count":53,"sub":"“실패도 이야기다” 5600만 과학 유튜버의 유쾌한 기술 전달법","kw":["콘텐츠","테크"]},{"id":5004,"title":"Make Something Wonderful","ed":"L","author":"롱블랙","rating":4.6,"count":238,"sub":"잡스가 생전에 남긴 메시지를 읽다","kw":["책 리뷰","리더십"]},{"id":5003,"title":"구글 X","ed":"K","author":"롱블랙","rating":4.3,"count":118,"sub":"14년 된 비밀 혁신 조직이 실패에서 배움을 얻는 법","kw":["테크","경영 전략"]},{"id":5002,"title":"실패박물관","ed":"B","author":"롱블랙","rating":4.4,"count":1356,"sub":"심리학자가 ‘망한 제품’을 모으며 깨달은 ‘좋은 실패’의 기준","kw":["사업 기획","인문"]},{"id":5001,"title":"인생네컷","ed":"C","author":"롱블랙","rating":4.2,"count":1458,"sub":"실패로 쌓은 경험, 한해 1800만이 찾는 놀이 문화를 만들다","kw":["브랜딩","트렌드"]},{"id":2167,"title":"FONDO : 매진율 99%, 익숙한 식사를 낯선 경험으로 바꾸는 법","ed":"C","author":"이지혜","kw":["F&B","공간"],"upcoming":"11월 6일","dday":3,"rating":4.3,"count":1117,"est":true},{"id":2166,"title":"유린도 : 일본판 ‘민음사 TV’, 117년 노포 서점이 유튜브로 부활한 법","ed":"C","author":"롱블랙","kw":["콘텐츠","커머스"],"upcoming":"11월 5일","dday":2,"rating":4.2,"count":351,"est":true},{"id":2165,"title":"센트온 : 포시즌스·올리브영의 향 컨설턴트가 말하는 ‘잔향을 남기는 브랜딩’","ed":"C","author":"김지헌","kw":["브랜딩","마케팅"],"upcoming":"11월 4일","dday":1,"rating":4.6,"count":1480,"est":true},{"id":2164,"title":"아틀라스 옵스큐라 : ‘기묘한 장소만 알려줍니다’ 3000만 명 모은 여행 지도","ed":"K","author":"롱블랙","rating":4.4,"count":312,"short":"아틀라스 옵스큐라","sub":"‘기묘한 장소만 알려줍니다’ 3000만 명 모은 여행 지도","kw":["여행","사업 기획","콘텐츠"],"today":true,"date":"2026.11.03","dur":"15:23"},{"id":2163,"title":"메모에 관하여 : ‘생각의 신선도’ 높이는 끄적임의 기술, 6인에게 듣다","ed":"C","author":"김지원, 박정수, 백희성, 오하림, 이석우, 이승희","rating":4.4,"count":1120,"kw":["생산성","자기계발"],"date":"2026.11.02"},{"id":2162,"title":"사람의 마지막 직업 : “이 정도는 AI가 해주는데​” 라는 말이 파괴하는 것","ed":"K","author":"앨리슨 퓨","rating":4.3,"count":980,"kw":["테크","인문"],"date":"2026.10.31"},{"id":2161,"title":"안경 디자이너 김종필 : 13억 빚 딛고, 30년간 안경을 파고든 힘을 말하다","ed":"B","author":"김종필","rating":4.5,"count":1210,"kw":["디자인","브랜딩"],"date":"2026.10.30"},{"id":2160,"title":"Z세대가 열광하는 회사, 산리오의 2대 사장에게 비결을 듣다","ed":"N","author":"토미오카 쿠미코","rating":4.2,"count":640,"kw":["경영 전략","브랜딩"],"series":"NewsPicks","date":"2026.10.29"},{"id":2159,"title":"코너버리 : 모서리 스테이플러로 세계 진출, 대구 창업가의 시장 개척기","ed":"K","author":"김영진","rating":4.4,"count":1010,"kw":["사업 기획","커머스"],"date":"2026.10.27"},{"id":2158,"title":"캐시 우드 : 테슬라의 미래를 먼저 본 투자자가, 격변의 시대를 읽는 법","ed":"L","author":"캐시 우드","rating":4.3,"count":1330,"kw":["경영 전략","테크"],"date":"2026.10.28"},{"id":2157,"title":"좀비런 : 살아남기 위해 달려라, 1000만 명 모은 러닝앱의 ‘몰입 설계법’","ed":"C","author":"롱블랙","rating":4.3,"count":1150,"kw":["테크","웰니스"],"date":"2026.10.26"},{"id":2156,"title":"조직문화 코치와 읽는 『인간관계론』 : 사람을 잃는 데는 이유가 있다","ed":"B","author":"최재웅","rating":4.6,"count":1480,"kw":["리더십","책 리뷰"],"series":"이제 읽으러 갑니다","date":"2026.10.24"},{"id":2154,"title":"인류학자의 관찰 연습 : 쓰레기, 영수증, 사람들의 말투까지 영감으로 삼는 법","ed":"K","author":"롱블랙","rating":4.4,"count":1290,"kw":["인문","마케팅"],"date":"2026.10.23"},{"id":2153,"title":"김밥대장 정다현 : “김밥도 직업이 된다” 전국 800곳 누빈 덕후의 실행력","ed":"C","author":"정다현","rating":4.3,"count":970,"kw":["F&B","콘텐츠"],"date":"2026.10.22"},{"id":2152,"title":"아소비시스템 : ‘귀여움의 정의’ 바꾼 일본 엔터사, K팝의 나라에 연착륙하다","ed":"C","author":"호소다 다카히로","rating":4.2,"count":760,"kw":["콘텐츠","브랜딩"],"date":"2026.10.21"},{"id":2151,"title":"무라카미 하루키의 창작론 : 임경선 작가와 함께 읽는 『직업으로서의 소설가』","ed":"B","author":"임경선","rating":4.7,"count":1690,"kw":["책 리뷰","콘텐츠"],"series":"이제 읽으러 갑니다","date":"2026.10.20"},{"id":2149,"title":"손절사회 : “무해한 삶은 왜 해로울까” 98년생 사회학자의 질문","ed":"B","author":"이승연","rating":4.4,"count":1340,"kw":["인문","트렌드"],"date":"2026.10.17"},{"id":2148,"title":"동기부여에 관하여 : 끝까지 해내는 사람들에겐 전략이 있다","ed":"B","author":"롱블랙","rating":4.3,"count":1179,"short":"동기부여에 관하여","sub":"끝까지 해내는 사람들에겐 전략이 있다","kw":["자기계발","책 리뷰"],"date":"2026.10.15"},{"id":2147,"title":"방멘 : 여행으로 밥먹고 살 수 있을까? 대기업 직장인이 찾은 답","ed":"K","author":"방태현","rating":4.3,"count":920,"kw":["여행","콘텐츠"],"date":"2026.10.15"},{"id":2144,"title":"피츠카랄도 에디션 : 노벨상 작가를 4번 알아본 출판사의 안목, 무엇이 다를까","ed":"L","author":"롱블랙","kw":["인문"],"rating":4.1,"count":1057,"est":true,"date":"2026.10.10"},{"id":2143,"title":"PD 김태호 : 경력을 내세울 수 없는 콘텐츠 판, 자존심을 비워서라도 배운다","ed":"K","author":"김태호","kw":["콘텐츠"],"rating":4.5,"count":426,"est":true,"date":"2026.10.09"},{"id":2142,"title":"거침없이 질주하는 돈키호테에서 ‘리테일의 미래’를 보다","ed":"N","author":"하마다 나오코, 고바야시 노부요","kw":["커머스"],"series":"NewsPicks","rating":4.3,"count":654,"est":true,"date":"2026.10.08"},{"id":2141,"title":"동사의 힘 : 에세이부터 마케팅 카피까지, 동사 하나가 문장을 살린다","ed":"B","author":"롱블랙","kw":["마케팅"],"rating":4.3,"count":547,"est":true,"date":"2026.10.07"},{"id":2140,"title":"음성해설작가 서수연 : 영화와 드라마를 ‘듣는 콘텐츠’로 번역한다는 것","ed":"K","author":"서수연","kw":["콘텐츠"],"rating":4.7,"count":318,"est":true,"date":"2026.10.06"},{"id":2139,"title":"NTS 라디오 : “청취자는 바보가 아니다” 알고리즘 없는 방송국의 생존법","ed":"B","author":"롱블랙","kw":["콘텐츠"],"rating":4.2,"count":1452,"est":true,"date":"2026.10.05"},{"id":2137,"title":"네온 : 「기생충」부터 「호프」까지, 미국을 사로잡은 배급사의 홍보 전략","ed":"C","author":"롱블랙","kw":["경영 전략"],"rating":4.4,"count":769,"est":true,"date":"2026.10.02"},{"id":2136,"title":"돈 때문에 불안하다는 착각 : ‘지금 안 사면 늦는다’는 말에 흔들려봤다면","ed":"K","author":"정지우","kw":["사업 기획"],"rating":4.4,"count":1462,"est":true,"date":"2026.10.01"},{"id":2134,"title":"웨인 티보 : 작은 것들을 사랑하는 재능으로 거장이 된 101세 화가","ed":"C","author":"롱블랙","kw":["예술"],"rating":4.5,"count":418,"est":true,"date":"2026.09.29"},{"id":2133,"title":"일이 사라진 세상 : AI가 노동을 대신하는 삶은 낙원일까, 지옥일까","ed":"B","author":"이진우","kw":["테크"],"rating":4.5,"count":950,"est":true,"date":"2026.09.28"},{"id":2132,"title":"나이키의 위기 : ‘더 잘 팔자’는 전략은 어떻게 독이 되었나","ed":"L","author":"롱블랙","kw":["경영 전략"],"rating":4.6,"count":1781,"est":true,"date":"2026.09.26"},{"id":2131,"title":"QB하우스 : 샴푸 없는 10분 컷 미용실, 3억 명의 시간을 아끼다","ed":"K","author":"롱블랙","kw":["인문"],"rating":4.7,"count":324,"est":true,"date":"2026.09.25"},{"id":2130,"title":"오스틴 클레온 : 잘 훔쳐야 잘 만든다? 구글이 찾는 작가와 창의력 되찾기","ed":"C","author":"오스틴 클레온","kw":["브랜딩"],"rating":4.7,"count":1787,"est":true,"date":"2026.09.24"},{"id":2129,"title":"인센티브의 재발견 : 좋은 보상은 나를 어떤 사람으로 만드는가","ed":"C","author":"유리 그니지","kw":["브랜딩"],"rating":4.2,"count":517,"est":true,"date":"2026.09.23"},{"id":2128,"title":"밥 로스 : “우린 실수하지 않는다, 그저 행복한 우연을 겪었을 뿐”","ed":"B","author":"이연","kw":["디자인"],"rating":4.4,"count":311,"est":true,"date":"2026.09.22"},{"id":2127,"title":"타인을 읽는 말 : 가족 · 친구와 대화할 때 막막한 기분을 느껴봤다면","ed":"K","author":"롱블랙","kw":["책 리뷰"],"rating":4.5,"count":1554,"est":true,"date":"2026.09.21"},{"id":2126,"title":"박서보 : “참 치열하게 살았다” 아들이 그리는 단색화 거장의 92년","ed":"B","author":"김인애","kw":["테크"],"rating":4.1,"count":989,"est":true,"date":"2026.09.19"},{"id":2124,"title":"수고인류의 시간 : 송길영 “배려와 숙련이 새로운 화폐가 된다”","ed":"B","author":"송길영","kw":["경영 전략"],"rating":4.5,"count":1424,"est":true,"date":"2026.09.17"},{"id":2123,"title":"심플의 발견 7부 : LG유플러스 장준영, 심플은 어떻게 브랜드의 약속이 되는가","ed":"B","author":"장준영","kw":["브랜딩"],"rating":4.6,"count":1007,"est":true,"date":"2026.09.16"},{"id":2122,"title":"이토록 지적인 산책 : 매일 걷는 길에서도 경이로움을 발견할 수 있을까","ed":"C","author":"롱블랙","rating":4.3,"count":1036,"short":"이토록 지적인 산책","sub":"매일 걷는 길에서도 경이로움을 발견할 수 있을까","kw":["웰니스","인문"],"date":"2026.09.15"},{"id":2121,"title":"환대의 초격차 : 5성급 호텔부터 집앞 카페까지, ‘사람의 손길’에서 찾은 경쟁력","ed":"L","author":"차승희","kw":["공간"],"rating":4.3,"count":991,"est":true,"date":"2026.09.14"},{"id":2120,"title":"조벽 : 한국 교육 혁신가, 정답 너머 ‘실패를 뚫는 힘’을 말하다","ed":"K","author":"조벽","kw":["자기계발"],"rating":4.2,"count":1405,"est":true,"date":"2026.09.12"},{"id":2119,"title":"편집력의 시대 : 콘텐츠부터 커머스까지, 좋은 것을 고르는 8인의 생각법","ed":"B","author":"김재원, 니나, 이의성, 원덕현, 임승원, 정보라, 최혜진, 홍일택","kw":["커머스"],"rating":4.4,"count":1001,"est":true,"date":"2026.09.11"},{"id":2118,"title":"세스 고딘 2 : 경영 구루의 조언, 이제 ‘두려운 일’을 시작하라","ed":"K","author":"임 모니카","kw":["경영 전략"],"rating":4.7,"count":431,"est":true,"date":"2026.09.10"},{"id":2117,"title":"노 코더가 온다 : 바이브 코딩은 ‘밥벌이’를 가능하게 했을까, 8인에게 듣다","ed":"L","author":"최성수, 고재현, 고서진, 이지혜, 문수진, 박연제, 니콜라스, 김세련","rating":4.4,"count":1516,"short":"노 코더가 온다","sub":"바이브 코딩은 ‘밥벌이’를 가능하게 했을까, 8인에게 듣다","kw":["테크","생산성"],"date":"2026.09.09"},{"id":2116,"title":"오늘 단 2시간만 : 어떻게 하루 종일 행복할 수 있겠어요","ed":"C","author":"롱블랙","kw":["트렌드"],"rating":4.3,"count":440,"est":true,"date":"2026.09.08"},{"id":2115,"title":"어느새 AI에 의존하는 나, 뇌가 퇴화하고 있진 않을까?","ed":"N","author":"이케다 미쓰후미","kw":["테크"],"series":"NewsPicks","rating":4.1,"count":1661,"est":true,"date":"2026.09.07"},{"id":2114,"title":"닌텐도 게임에서 배우는 리더십 : 일이 저절로 돌아가는 조직은 무엇이 다를까","ed":"C","author":"김상완","kw":["리더십"],"rating":4.3,"count":562,"est":true,"date":"2026.09.05"},{"id":2113,"title":"평범함의 재발견 : 해변과 식탁에서 시대를 발견한, 사진가 마틴 파의 관찰법","ed":"K","author":"손현정","kw":["예술"],"rating":4.7,"count":501,"est":true,"date":"2026.09.04"},{"id":2111,"title":"루에랑 : 루브르 옆에서 돼지갈비 만찬, K-푸드의 프랑스 개척기","ed":"L","author":"차승희","rating":4.3,"count":880,"kw":["F&B","사업 기획"],"date":"2026.10.19"},{"id":2110,"title":"극장의 반란 : 스트리밍 시대, ‘함께 보는 즐거움’은 어디까지 갈 수 있을까","ed":"K","author":"롱블랙","kw":["인문"],"rating":4.1,"count":1743,"est":true,"date":"2026.09.01"},{"id":2109,"title":"나는 도대체 왜 눈치를 볼까 : ‘좋은 사람’이 되려다 나를 잃지 않으려면","ed":"B","author":"롱블랙","kw":["마케팅"],"rating":4.7,"count":1246,"est":true,"date":"2026.08.31"},{"id":2101,"title":"팀 쿡의 재발견 : 전 애플 직원이 말하는, 천재를 잇는 경영자의 방식","ed":"K","author":"롱블랙","kw":["경영 전략"],"rating":4.5,"count":415,"est":true,"date":"2026.08.21"},{"id":2100,"title":"좋은 이동에 관하여 : 지옥철에 오른 당신에게, 교통 철학자가 건네는 질문","ed":"B","author":"전현우","kw":["인문"],"rating":4.5,"count":1096,"est":true,"date":"2026.08.20"},{"id":2098,"title":"원더랜드 : 후추부터 선술집까지, 세상을 바꾼 ‘유희의 역사’를 읽다","ed":"K","author":"롱블랙","kw":["콘텐츠"],"rating":4.2,"count":1068,"est":true,"date":"2026.08.18"},{"id":2097,"title":"에스 데블린 : 올림픽 · 비욘세 무대 디자이너, “아이디어는 ‘사이’에서 온다”","ed":"C","author":"김인애","kw":["트렌드"],"rating":4.4,"count":1075,"est":true,"date":"2026.08.17"},{"id":2096,"title":"장수 공간의 조건 : 세계에서 가장 오래된 여관, 1300년 생존력의 비밀","ed":"K","author":"금동우","kw":["공간"],"rating":4.3,"count":307,"est":true,"date":"2026.08.15"},{"id":2095,"title":"이야기꾼의 취재력 : 「그것이 알고 싶다」 · 「꼬꼬무」 PD의 선 넘는 질문","ed":"B","author":"이동원","kw":["콘텐츠"],"rating":4.4,"count":1047,"est":true,"date":"2026.08.14"},{"id":2094,"title":"브랜드의 진화법 : 제품은 그대로, ‘선택받는 법’ 혁신한 79년 페인트 회사","ed":"C","author":"롱블랙","kw":["브랜딩"],"rating":4.6,"count":862,"est":true,"date":"2026.08.13"},{"id":2093,"title":"브릭 : 스마트폰 잠그는 돌멩이, ‘여유를 만드는 UX’ 설계법","ed":"C","author":"롱블랙","kw":["웰니스","디자인"],"rating":4.1,"count":1429,"est":true,"date":"2026.08.12"},{"id":2092,"title":"심플의 발견 5부 : 자기결정력이 사라진 시대, 야마구치 슈의 ‘인생 경영법’","ed":"K","author":"야마구치 슈","kw":["경영 전략"],"rating":4.5,"count":1751,"est":true,"date":"2026.08.11"},{"id":2090,"title":"수영의 이유 : 육지 동물인 인간은 왜 수천 년간 물속으로 뛰어들었을까","ed":"K","author":"롱블랙","kw":["웰니스"],"rating":4.6,"count":1704,"est":true,"date":"2026.08.08"},{"id":2089,"title":"박종진 : 키친타월 쌓아 올려, 5100:1 경쟁률 국제상 탄 한국인","ed":"B","author":"김인애","kw":["테크"],"rating":4.6,"count":1026,"est":true,"date":"2026.08.07"},{"id":2088,"title":"생산성에 관하여 : AI 시대 정리법, 폴더는 두고 내용물을 바꿔라","ed":"B","author":"티아고 포르테","kw":["테크","생산성"],"rating":4.5,"count":543,"est":true,"date":"2026.08.06"},{"id":2087,"title":"빗자루의 역주행 : 로봇청소기 시대, 연매출 100억원 넘긴 발명력 파고들기","ed":"L","author":"양혜정","kw":["자기계발"],"rating":4.3,"count":923,"est":true,"date":"2026.08.05"},{"id":2085,"title":"적을 만들지 않는 대화법 : ‘가시 박힌 말’을 주고받은 적 있다면","ed":"K","author":"롱블랙","kw":["브랜딩"],"rating":4.6,"count":331,"est":true,"date":"2026.08.03"},{"id":2084,"title":"“바빠서 공부는 못 하겠다”는 당신을 위한 학습팁 3가지","ed":"N","author":"구리하라 치아키","kw":["인문"],"series":"NewsPicks","rating":4.2,"count":1306,"est":true,"date":"2026.08.01"},{"id":2083,"title":"우리가 몰랐던 윤동주 : 흔들리던 세상에서 시인이 붙잡은 것","ed":"B","author":"김신정","kw":["인문"],"rating":4.7,"count":404,"est":true,"date":"2026.07.31"},{"id":2068,"title":"권력중독 : 왜 좋은 사람도 권력을 잡으면 변할까","ed":"B","author":"정지우","kw":["테크"],"rating":4.3,"count":1248,"est":true,"date":"2026.07.14"},{"id":2066,"title":"사이먼 시넥의 Why 수업 : 목표를 이뤄도 허무한 이유가 있습니다","ed":"B","author":"롱블랙","kw":["경영 전략"],"rating":4.1,"count":1454,"est":true,"date":"2026.07.11"},{"id":2057,"title":"아레나 : 알고리즘 없는 ‘내향형 SNS’는 어떻게 월 1억원씩 벌까","ed":"K","author":"롱블랙","kw":["사업 기획"],"rating":4.7,"count":571,"est":true,"date":"2026.07.01"},{"id":2055,"title":"니체가 현대인에게 : 국내 최고 니체 권위자가 말하는 ‘초인의 자세’","ed":"K","author":"이진우","kw":["인문"],"rating":4.5,"count":310,"est":true,"date":"2026.06.29"},{"id":2047,"title":"평정심 수련법 : 스포츠 선수들은 왜 ‘내면 근력’을 훈련할까","ed":"B","author":"짐 머피","kw":["자기계발"],"rating":4.2,"count":1641,"est":true,"date":"2026.06.19"},{"id":2046,"title":"아파트는 어떻게 마을이 되었나 : 남양주 별내 491세대의 주거 실험","ed":"K","author":"롱블랙","kw":["트렌드"],"rating":4.7,"count":765,"est":true,"date":"2026.06.18"},{"id":2044,"title":"밤의 설계자 : 자기 전 당신이 하는 생각이, 낮의 삶을 바꾼다","ed":"K","author":"롱블랙","kw":["마케팅"],"rating":4.6,"count":340,"est":true,"date":"2026.06.16"},{"id":2042,"title":"시들함 극복법 : 우울함도 번아웃도 아닌데, 사는 게 재미없나요?","ed":"C","author":"롱블랙","kw":["디자인"],"rating":4.3,"count":1504,"est":true,"date":"2026.06.13"},{"id":2040,"title":"경제학자의 무질서 수업 : 탁월해지고 싶다면, 불완전함을 사랑하라","ed":"K","author":"롱블랙","kw":["인문"],"rating":4.5,"count":1441,"est":true,"date":"2026.06.11"},{"id":2036,"title":"창조적 영감에 관하여 : ‘산만함’은 날 방해하는 적이 아니다","ed":"C","author":"롱블랙","kw":["콘텐츠"],"rating":4.5,"count":1756,"est":true,"date":"2026.06.06"},{"id":2034,"title":"가우디 수업 : 100년 전 떠난 바르셀로나 건축가가 AI 시대에 주목받는 이유","ed":"K","author":"심영규, 이병기","kw":["테크","공간"],"rating":4.7,"count":1144,"est":true,"date":"2026.06.04"},{"id":2027,"title":"소수헌 박경재 : 한국 첫 2스타 스시 장인을 만든 건, ‘부끄러움’이었다","ed":"K","author":"차승희","kw":["마케팅"],"rating":4.5,"count":567,"est":true,"date":"2026.05.27"},{"id":1971,"title":"인피니트 게임 : 비즈니스라는 무한게임을 즐기는 법, 홍성태 교수와 함께 읽다","ed":"B","author":"홍성태","kw":["자기계발"],"rating":4.5,"count":394,"est":true,"date":"2026.03.23"},{"id":1905,"title":"연결의 법칙 : ‘아름다운 허점’을 보일 때, 관계는 더 깊어진다","ed":"K","author":"정지우","kw":["사업 기획"],"rating":4.2,"count":622,"est":true,"date":"2026.01.05"},{"id":1876,"title":"아더십 : 금요일 밤, 뉴요커들이 클럽 대신 얼음물에 몸을 던지는 이유","ed":"K","author":"롱블랙","kw":["브랜딩"],"rating":4.3,"count":1498,"est":true,"date":"2025.12.02"},{"id":1866,"title":"이하성 : 타협하지 않는 법을 배운 셰프, ‘요리 괴물’로 성장하다","ed":"K","author":"차승희","kw":["F&B"],"rating":4.7,"count":630,"est":true,"date":"2025.11.20"},{"id":1849,"title":"읽기에 관하여 : “읽는 인간만이 질문한다” AI 시대, 생각의 주인이 되는 법","ed":"K","author":"최승필","kw":["테크","책 리뷰"],"rating":4.5,"count":1328,"est":true,"date":"2025.10.31"},{"id":1810,"title":"케이크 피크닉","ed":"B","author":"롱블랙","rating":4.3,"count":1126,"sub":"구글 UX 매니저가 만든 1분 만에 매진되는 사이드 프로젝트","kw":["디자인","F&B"],"date":"2025.09.16"},{"id":1792,"title":"사랑의 8가지 법칙 : 왜 내가 하는 사랑은 어려울까","ed":"C","author":"롱블랙","kw":["자기계발"],"rating":4.4,"count":1040,"est":true,"date":"2025.08.26"},{"id":1786,"title":"몽벨","ed":"B","author":"롱블랙","rating":4.4,"count":1761,"sub":"‘유행’을 거부한 50년, 일본의 파타고니아가 일하는 방법","kw":["브랜딩","패션/뷰티"],"date":"2025.08.19"},{"id":1769,"title":"스님의 청소법 : 정원 디자인의 대가가 말하는 ‘청소로 수행한다는 것’","ed":"B","author":"롱블랙","kw":["디자인"],"rating":4.4,"count":1121,"est":true,"date":"2025.07.30"},{"id":1575,"title":"한기용 : 19년차 팀 메이커, “리더는 인기 얻는 자리가 아닙니다”","ed":"L","author":"Ep9","kw":["리더십"],"rating":4.1,"count":1126,"est":true,"date":"2024.12.16"},{"id":1563,"title":"이상인 2","ed":"B","author":"이상인","rating":4.3,"count":60,"sub":"“AI가 일할 때 나는 성장하려면” 빅테크 디자이너의 공부법","kw":["디자인","자기계발"],"date":"2024.12.02"},{"id":1536,"title":"가슴속3천원","ed":"C","author":"롱블랙","rating":4.4,"count":117,"sub":"부업으로 만든 100만 길거리 음식 앱의 느슨한 운영법","kw":["F&B","사업 기획"],"date":"2024.10.31"},{"id":1518,"title":"북적북적","ed":"K","author":"롱블랙","rating":4.3,"count":98,"sub":"62만 독서기록 앱, 잘되는 사이드프로젝트를 말하다","kw":["테크","사업 기획"],"date":"2024.10.10"},{"id":1356,"title":"비트윈스페이스 : 더현대부터 스타필드까지, 초대형 공간 설계자의 원칙은","ed":"B","author":"롱블랙","rating":4.5,"count":1388,"kw":["공간","디자인"],"tags":["디자인","건축","브랜드 경험","트렌드"],"summary":"비트윈스페이스는 더현대서울과 스타필드 같은 대형 공간을 설계하며, 단순한 유행을 넘어서 사람들의 경험을 디자인해요. 공간이 주는 감정과 무의식을 중요하게 여기고, 지속 가능한 디자인을 추구해요.","date":"2024.04.04"},{"id":1321,"title":"맷 에이브러햄스 : 말하기 전문가, “말 잘하고 싶으면, 최대한 평범해져라”","ed":"C","author":"맷 에이브러햄스","kw":["경영 전략"],"rating":4.2,"count":1736,"est":true,"date":"2024.02.23"},{"id":1301,"title":"미루기에 관하여 : “오늘도 할 일을 미뤘나요?” 심리학자의 처방전","ed":"C","author":"이동귀","kw":["웰니스","자기계발"],"rating":4.7,"count":951,"est":true,"date":"2024.01.31"},{"id":1298,"title":"아이스 호텔","ed":"K","author":"롱블랙","rating":4.2,"count":1720,"sub":"얼음으로 만든 영하 5도 객실, 체크인 하시겠어요?","kw":["공간","여행"],"date":"2024.01.27"},{"id":1261,"title":"인센티브 이코노미 : 사람들은 왜 ‘할인’보다 ‘작은 덤’을 더 좋아할까","ed":"K","author":"김지원","kw":["마케팅"],"rating":4.5,"count":1402,"est":true,"date":"2023.12.15"},{"id":1186,"title":"여백 사고","ed":"K","author":"롱블랙","rating":4.3,"count":1925,"sub":"15개 직업 가진 CEO, 삶을 즐기는 생각 기술을 말하다","kw":["자기계발","생산성"],"date":"2023.09.19"},{"id":1183,"title":"이재흔 : 트렌드 찾다 지쳤나요? 대학내일 연구원의 트렌드 분석법","ed":"C","author":"이재흔","rating":4.3,"count":1510,"kw":["트렌드","마케팅"],"tags":["트렌드 분석","문화 연구","사회 변화","20대 문화"],"summary":"트렌드는 삶을 재밌게 만들 수 있어요. 대학내일20대연구소의 트렌드 파트장 이재흔은 편견 없이 보고, 직접 경험하고, 수집하고, 검증하는 과정을 통해 세대와 시대의 변화를 읽고 있죠.","date":"2023.09.15"},{"id":985,"title":"토스 UX 라이팅 : 정답이 있는 글쓰기로, 1500만 사용자에게 말을 걸다","ed":"C","author":"김자유","kw":["디자인"],"rating":4.5,"count":1359,"est":true,"date":"2023.01.27"},{"id":848,"title":"러비시 팸진","ed":"C","author":"롱블랙","rating":4.4,"count":1803,"sub":"사이드프로젝트로 만든 가족잡지, 광고제와 매니아의 선택을 받다","kw":["콘텐츠","디자인"],"date":"2022.08.20"},{"id":830,"title":"선우정아","ed":"C","author":"롱블랙","rating":4.3,"count":1803,"sub":"기꺼이 힘들어하고 버티어내, 마침내 장르가 되다","kw":["예술","콘텐츠"],"date":"2022.07.30"},{"id":793,"title":"신우석 : 돌고래유괴단, 크리에이티브 성공 공식을 새로 쓰다","ed":"C","author":"신우석","kw":["인문"],"rating":4.4,"count":1522,"est":true,"date":"2022.06.17"},{"id":654,"title":"배우 김신록 : 무엇을 훈련할 것인가 찾는 것이, 훈련의 시작이다","ed":"C","author":"정시우","kw":["자기계발"],"rating":4.1,"count":1211,"est":true,"date":"2022.01.06"},{"id":545,"title":"나무의사 김천기","ed":"K","author":"롱블랙","rating":4.5,"count":1505,"sub":"알맞은 땅에 심은 나무는 500년을 산다","kw":["인문","웰니스"],"date":"2021.09.01"},{"id":504,"title":"어그","ed":"L","author":"롱블랙","rating":4.2,"count":1525,"sub":"어글리 부츠, 편안함으로 연매출 2조 브랜드가 되다","kw":["브랜딩","패션/뷰티"],"date":"2021.07.15"},{"id":451,"title":"브랜드보이 : 스스로 브랜드가 되고 싶다면 한 우물을 파라","ed":"B","author":"안성은","kw":["브랜딩"],"rating":4.1,"count":1189,"est":true,"date":"2021.05.14"},{"id":436,"title":"성정기 : 언어와 국경의 벽을 넘어, 차별없는 디자인을 말하다","ed":"K","author":"성정기","rating":4.4,"count":1203,"kw":["디자인","인문"],"tags":["디자인","사회","인물","성공 사례"],"summary":"성정기 디자이너는 모든 사람을 배려하는 '보편적 디자인'의 중요성을 이야기해요. 어머니의 고된 삶에서 출발한 그의 디자인 철학은, 누구나 차별받지 않고 사용 가능한 제품을 만드는 것이에요.","date":"2021.04.27"},{"id":363,"title":"습관에 관하여 : 내가 바라는 내 자신이 되기 위한 첫 걸음","ed":"C","author":"김선우","kw":["자기계발"],"rating":4.7,"count":1165,"est":true,"date":"2021.02.01"},{"id":194,"title":"손열음 : 타고난 재능과 이를 사수하려는 노력, 그 팽팽한 균형 감각","ed":"C","author":"손열음","kw":["디자인"],"rating":4.5,"count":1074,"est":true,"date":"2020.07.18"}],"scraps":[{"id":"H1793050147992hj2rrzirroq","noteId":2156,"quote":"상대를 침묵시켰다고 설득한 건 아닙니다. 옳은 지적도 상대를 무시하는 방식으로 전하면 반발을 부릅니다. 상대가 자신의 생각을 스스로 돌아볼 여지를 주세요.","ts":"2026-10-27T06:29:00","skin":"gray","memo":""},{"id":"H1793050126587e83rpj8j7pp","noteId":2156,"quote":"바꾸고 싶고, 통제하고 싶고, 개선시키고 싶은 사람이 있는가? 좋은 일이다! 정말 찬성하고 싶다. 하지만 먼저 자신부터 그렇게 만들어 보는 게 어떨까? 순전히 이기적인 관점에서 보아도, 자신을 바꾸는 것이 다른 사람을 고치려고 애쓰는 것보다 훨씬 더 유익하다. 게다가 훨씬 덜 위험하다.","ts":"2026-10-27T06:28:00","skin":"gray","memo":""},{"id":"H1793050012140pa90n8727c","noteId":2156,"quote":"무슨 말을 할지 고민하기 전에, 상대가 ‘무엇에 수고하는지부터 살펴보라’고요.","ts":"2026-10-27T06:26:00","skin":"gray","memo":""},{"id":"H1793049915707leu34pvv7fn","noteId":2156,"quote":"논쟁은 이길 수 없다. 논쟁에서 지면 진 것이고, 이긴다고 해도 진 것이다. 왜냐고? 글쎄, 다른 사람에게 승리를 거두고, 그의 주장에 구멍을 숭숭 뚫어 놓고, 그가 제정신이 아니라는 걸 증명한다고 하자. 그래서 어쩌겠다는 건가? 기분이 좋을 수는 있겠다. 하지만 상대방은 어떤가? 당신은 상대방이 열등감을 느끼게 만들었다. 그의 자존심에 상처를 주었다","ts":"2026-10-27T06:25:00","skin":"gray","memo":""},{"id":"H1793049811255cgn60w28rj5","noteId":2156,"quote":"당신과 이야기 나누고 있는 사람은 당신과 당신의 문제보다는 자신과 자신의 욕구, 자신의 문제에 백 배는 더 관심이 있다는 사실을 기억하라","ts":"2026-10-27T06:23:00","skin":"gray","memo":""},{"id":"H1792558684911n87kz5sagyr","noteId":2151,"quote":"어쨌든 소설의 등장인물에 대해 나는 배워야 할 것들이 아직 많습니다. 그와 동시에 내 소설의 등장인물에게서 내가 배워야 할 것들도 아직 많습니다. 앞으로도 온갖 이상하고 신기하고 또한 컬러풀한 캐릭터를 소설 속에 등장시켜 숨 쉬게 해주고 싶습니다.새 소설을 쓰기 시작할 때, 나는 항상 가슴이 두근두근 설렙니다. 이번에는 또 어떤 인물들을 만날까, 하고.","ts":"2026-10-21T13:58:00","skin":"gray","memo":""},{"id":"H1792558549911i14m0yp5r49","noteId":2151,"quote":"장기적인 일을 할 때는 규칙성이 중요한 의미","ts":"2026-10-21T13:55:00","skin":"gray","memo":""},{"id":"H1792558529404mgxxxh0alnr","noteId":2151,"quote":"무라카미에게 그 힘을 만들어주는 건, ‘루틴을 지키는 일’이었어요. 그는 매일 새벽에 일어나 커피를 내리고, 하루의 가장 첫 순서로 글쓰기를 하죠. 5시간가량 몰입해 글을 씁니다.","ts":"2026-10-21T13:55:00","skin":"gray","memo":""},{"id":"H1792558517173egeq54eyb5v","noteId":2151,"quote":"그렇게 묵묵히 계속하다 보면 어느 순간 내 안에서 ‘뭔가’가 일어납니다. 하지만 그것이 일어나기까지는 어느 정도 시간이 걸립니다. 당신은 그것을 참을성 있게 기다려야만 합니다. 하루는 어디까지나 하루씩입니다. 한꺼번에 몰아 이틀 사흘씩 해치울 수는 없습니다.","ts":"2026-10-21T13:55:00","skin":"gray","memo":""},{"id":"H1792539878645hbwttp6ds8","noteId":2151,"quote":"그래서 ‘아, 난감하네. 이쪽이 더 잘 썼으면 어쩌지?’라고 내심 걱정하면서 읽어봤는데, 결론부터 말하자면 나중에 다시 쓴 버전이 명백히 뛰어났습니다.여기서 내가 말하고 싶은 것은 어떤 문장이든 반드시 개량의 여지가 있다는 것입니다.","ts":"2026-10-21T08:44:00","skin":"gray","memo":""},{"id":"H1792539703197h0evpvw3m8v","noteId":2151,"quote":"“물론 내 영작 능력이라야 뭐, 뻔하지요. 한정된 수의 단어를 구사해 한정된 수의 구문으로 글을 쓰는 수밖에 없습니다. 문장도 당연히 짧아집니다. (…) 묘사에서 불필요한 군더더기를 깎아내고, 전체를 콤팩트한 형태로 만들어 한정된 용기에 넣는 단계를 거칠 수밖에 없습니다.”_49","ts":"2026-10-21T08:41:00","skin":"gray","memo":""},{"id":"H1791597185105qn8k8r7ih3","noteId":2141,"quote":"비유가 독자의 마음속에 그림을 그린다면, 동사는 그림을 움직이게 합니다.","ts":"2026-10-10T10:54:00","skin":"gray","memo":""},{"id":"H1791596849996j3hi6ur5zfn","noteId":2141,"quote":"우리는 빠르게 하강했다. (여전히 딱딱하다. 속도를 묘사하는 동사를 찾아 부사를 없애자.)","ts":"2026-10-10T10:48:00","skin":"gray","memo":""},{"id":"H1791596663600p53yh9n56t9","noteId":2141,"quote":"수동태는 종종 “명확성의 적이 되고, 최악의 경우 진실을 은폐”_79p하기도 합니다.","ts":"2026-10-10T10:44:00","skin":"gray","memo":""},{"id":"H1791595501169kim93y06se","noteId":2141,"quote":"올바른 동사는 정확하고 정직하며 효율적이다.","ts":"2026-10-10T10:25:00","skin":"gray","memo":""},{"id":"H1790609733899i2jqhjmryvk","noteId":2130,"quote":"“어떤 인간도 자신의 문체나 어조를 타고나지 않아요. 태어날 땐 스스로가 누구인지도 잘 모르죠. 우린 결국 훔치면서 배우는 거예요. 여기서 말하는 ‘훔치기’란 표절이 아닌 실습이에요. 표절이 다른 사람의 작품을 내 것인 양 조작한다면, 실습은 ‘역설계’하는 일이죠. 내가 좋아하는 자동차가 있다면, 그 자동차의 작동 원리를 알고 싶어 부품을 다 뜯고 재조립하는 것처럼요.”","ts":"2026-09-29T00:35:00","skin":"gray","memo":""},{"id":"H1790609234969arbyrww2aen","noteId":2115,"quote":"해부학자였던 요로 다케시 씨는 ‘바보의 벽*’이라는 개념을 들려줬습니다. 다 이해했다고 착각해 버리는 인간의 특성을 꼬집으면서요.","ts":"2026-09-29T00:27:00","skin":"gray","memo":""},{"id":"H1790609204786u807ve7nn9","noteId":2115,"quote":"말이 전혀 통하지 않는 땅에 갔다고 해봅시다. 그곳 사람들이 들판을 달리는 토끼를 가리키며 “가바가이”라고 외칩니다. 과연 무슨 뜻일까요?아마 ‘토끼’일 수도 있지만, ‘들판을 달리는 네발 달린 짐승’이나 ‘동물’을 뜻할 수도 있습니다. 아니면 “저놈 잡아라!”라는 명령일지도 모르죠.","ts":"2026-09-29T00:26:00","skin":"gray","memo":""},{"id":"H1790609163948clj6907j12q","noteId":2115,"quote":"틀릴지 모르는 대담한 가설이 모여 인류 역사를 발전시키곤 했습니다.","ts":"2026-09-29T00:26:00","skin":"gray","memo":""},{"id":"H1790609137636ljyd4ttjqon","noteId":2115,"quote":"문명과 예술, 과학의 역사를 보면 늘 누군가는 ‘틀릴지도 모르는 가설’을 세웠습니다. 그 가설을 바탕으로 생각을 이어간 일이, 새로운 것을 만드는 동력이 됐다고 생각합니다.","ts":"2026-09-29T00:25:00","skin":"gray","memo":""},{"id":"H1790606515193j0mr9u1s26","noteId":2130,"quote":"“스타일만 훔칠 게 아니라 스타일 너머의 생각들을 훔쳐야 한다. 영웅들처럼 보여서는 안 된다. 영웅들처럼 보아야 한다. 영웅들을 카피하는 것의 가장 중요한 목적은 그들의 정신세계를 엿보는 것이다. 그들의 스타일을 카피해 보면 그들이 세상을 바라보는 방식을 배울 수 있다.”_오스틴 클레온 작가,『훔쳐라, 아티스트처럼』, 46p","ts":"2026-09-28T23:42:00","skin":"gray","memo":""},{"id":"H17906064192043r36gzk08wu","noteId":2130,"quote":"독창적이고 싶다고? ‘남의 것’부터 훔쳐라","ts":"2026-09-28T23:41:00","skin":"gray","memo":""},{"id":"H1790492474677sqcisxlbixa","noteId":2115,"quote":"우리 인간에겐 시수를 거듭하며 기어코 오류를 바로잡아 나가는 힘이 있다","ts":"2026-09-27T16:02:00","skin":"gray","memo":""},{"id":"H1790489182632at97swwhvgk","noteId":2115,"quote":"영어로 ‘오렌지색 고양이orange cat’이라 하면, 일본인이 생각하는 오렌지색과는 다르죠. 영어권에선 ‘베이지색’에 가까운 색을 가리켜요. 이처럼 세상을 인식하는 잣대가 다른 겁니다.","ts":"2026-09-27T15:06:00","skin":"gray","memo":""},{"id":"H1790409878287a6jhd25wuer","noteId":2109,"quote":"나를 향한 기대를 스스로 품는 것","ts":"2026-09-26T17:06:00","skin":"gray","memo":""},{"id":"H1790408630435sb6tkputglb","noteId":2129,"quote":"‘해보니까 좋은데?’라는 마음을 가질 때까지 보상을 반복","ts":"2026-09-26T16:44:00","skin":"gray","memo":""},{"id":"H17890945654327ry0fetrt1m","noteId":2113,"quote":"마틴은 평범한 하루를 찍었습니다. 시간이 지나면 저절로 특별해질 거라 믿었거든요.","ts":"2026-09-11T11:42:00","skin":"gray","memo":""},{"id":"H1789094418207p3uul7y3qia","noteId":2113,"quote":"유머가 작품으로 들어가는 진입로 같은 거예요. 그렇게 들어가고 나면 그 안에 있는 중산층도, 계급도 보이기 시작하는 거죠.","ts":"2026-09-11T11:40:00","skin":"gray","memo":""},{"id":"H1787747521760x5mmp8fxkss","noteId":2092,"quote":"누구와 있을 것인가. 어디에 있을 것인가. 그리고 무엇을 할 것인가.","ts":"2026-08-26T21:32:00","skin":"gray_basic","memo":""},{"id":"H1787747388605ujjbgc6cxrm","noteId":2092,"quote":"인간의 뇌에는 분명한 한계가 있어요. 생각할 수 있는 힘도, 판단에 쓸 수 있는 시간도 한정돼 있죠.","ts":"2026-08-26T21:29:00","skin":"gray_basic","memo":""},{"id":"H17877473234679b6mwojlanf","noteId":2092,"quote":"농구를 해보지도 않고 ‘내가 농구를 잘할까, 좋아할까’를 알 수 없는 것과 같아요.","ts":"2026-08-26T21:28:00","skin":"gray_basic","memo":""},{"id":"H1787747247847q2cam60ubfc","noteId":2092,"quote":"‘이 회사에 가면 사람들이 부러워하겠지’, ‘이 학교에 가면 부모님이 좋아하시겠지’라는 건 머리로 계산하는 겁니다. 결정한 사람은 나지만, 판단의 기준은 여전히 바깥에 있죠.반대로 ‘이건 정말 해보고 싶다’, ‘생각만 해도 설렌다’, ‘너무 재미있어 보인다’는 감각은 마음에서 오죠. 그런 감각을 따라 결정해야 ‘자기결정’입니다","ts":"2026-08-26T21:27:00","skin":"gray_basic","memo":""},{"id":"H1787282398120ppbq03g5ki","noteId":2089,"quote":"살면서 실패라고 생각한 것들도 실은 내가 최선을 다했던 일이라는 생각이 들었습니다. 중요한 건, 내 삶에 생겨난 일들을 ‘어떤 시선’으로 볼 것인지에 달려 있다.","ts":"2026-08-21T12:20:00","skin":"gray","memo":""},{"id":"H1787281959609xge7yjvm2o","noteId":2089,"quote":"교수님은 이렇게 말씀하셨어요. ‘물병과 종이컵 모두 물을 품는 컨테이너다. 하지만 손걸레도 물을 머금을 수 있다는 점에서, 컨테이너가 될 수 있다’","ts":"2026-08-21T12:12:00","skin":"gray","memo":""},{"id":"H17871579778330l6vkzscdog","noteId":2093,"quote":"어쩌면 좋은 서비스란, ‘물러날 순간을 아는 서비스’가 아닐까요?","ts":"2026-08-20T01:46:00","skin":"gray","memo":""},{"id":"H1785399196281dqkw2cw8bjw","noteId":2066,"quote":"3단계 : ‘WHY’ 선언문 만들기마지막으로 내가 발견한 테마를, ‘기여’와 ‘영향’으로 나눠 한 문장으로 정리합니다.","ts":"2026-07-30T17:13:00","skin":"gray","memo":""},{"id":"H1785399161415y19y1js4tt","noteId":2066,"quote":"각 이야기마다 두 가지를 적어봅니다. ① 내가 어떤 행동을 했는가. ② 그 결과 다른 사람에게 어떤 변화가 일어났는가.","ts":"2026-07-30T17:12:00","skin":"gray","memo":""},{"id":"H1785399138040pdzw35jpqd8","noteId":2066,"quote":"기준선 위엔 다시 돌아가고 싶은 경험을, 선 아래엔 힘들었지만 지금의 나를 만든 경험을 적는 거죠.","ts":"2026-07-30T17:12:00","skin":"gray","memo":""},{"id":"H178539911749391cs12zpdh5","noteId":2066,"quote":"2단계 : 내 삶의 테마 찾기다음은 1단계에서 모은 이야기를 통해, 서로 다른 경험을 관통하는 ‘접점’을 찾아봅니다.","ts":"2026-07-30T17:11:00","skin":"gray","memo":""},{"id":"H1785399069274ehwks1fa2rp","noteId":2066,"quote":"1단계 : 스토리 수집하기먼저 살면서 감정의 진폭이 컸던 사건을 최소 열 개 적습니다.","ts":"2026-07-30T17:11:00","skin":"gray","memo":""},{"id":"H17853990159587ugmcfhta9f","noteId":2066,"quote":"화살이 목표물을 향해 나아가기 위해서는 먼저 그 반대 방향, 즉 180도 뒤로 당겨져야 한다. WHY도 마찬가지다.","ts":"2026-07-30T17:10:00","skin":"gray","memo":""},{"id":"H178460673943462j9sjn34ct","noteId":2057,"quote":"좋아요’와 같은 작은 기능 하나가 사람들이 자료를 고르는 방식을 완전히 바꾼다","ts":"2026-07-21T13:11:00","skin":"gray","memo":""},{"id":"H1784606668067iphdzkgd7qe","noteId":2057,"quote":"불편을 없애면 작업하는 정보와의 관계가 끊어지게 되기 때문입니다. ‘정보에 수동으로 맥락을 부여하는 인간적인 요소’를 없애는 건, 사람이 뭔가를 중요하다고 판단하는 순간을 없애는 것과 같습니다.","ts":"2026-07-21T13:04:00","skin":"gray","memo":""},{"id":"H1784606549953u6htt6wa3cs","noteId":2057,"quote":"취향은 곧 어떤 것을 보고, 플러스와 마이너스를 적는 일이에요. 남기고 지우는 ‘작은 선택’을 계속하는 것이죠. 취향은 결국 ‘주의를 기울이는 일’이니까요.","ts":"2026-07-21T13:02:00","skin":"gray","memo":""},{"id":"H1784606425588y8oqg9605of","noteId":2057,"quote":"누구나 바다·산·사막을 곁에 두진 못해도, 구름은 다들 갖고 있잖아.","ts":"2026-07-21T13:00:00","skin":"gray","memo":""},{"id":"H1784404917445t78sunlz37","noteId":194,"quote":"사람들이 알고 모르는 것? 그건 상관 없는 것 같아요. 저한테 중요한 건, 어떻게 들릴지 모르겠지만 제 자신이거든요. 제 일에는 제가 가장 엄격하고, 비판적인 시선을 견지해요.","ts":"2026-07-19T05:01:00","skin":"gray","memo":""},{"id":"H1784404864182e7ztz2qxw89","noteId":194,"quote":"피아노는 기술 연마와는 또 다른, 공부라는 개념이 있다고 생각해요.","ts":"2026-07-19T05:01:00","skin":"gray","memo":""},{"id":"H1784363689761g7bw9xxe3h5","noteId":2055,"quote":".“지금 네가 살고 또 살아온 이 삶을, 너는 다시 한번, 아니 무수히 여러 번 살아야 한다.”_프리드리히 니체, 『즐거운 학문』 341절 「가장 무거운 것」","ts":"2026-07-18T17:34:00","skin":"gray","memo":""},{"id":"H1783918398540bl9yrbbziwh","noteId":2046,"quote":"경비 노동자와 미화 노동자였어요. 그래서 미화 노동자는 ‘말과 글의 뼈대’라는 뜻의 ‘벼리’라고 부르기로 했어요. 우리 아파트의 중심으로 대우하자는 취지였죠. 그렇게 ‘보안관’, ‘동네지기’라는 이름도 나왔고요.","ts":"2026-07-13T13:53:00","skin":"gray","memo":""},{"id":"H17837885941151yrty7d1ldr","noteId":2044,"quote":"삶의 의미 자체에 대한 질문은 사실 그렇게 중요한 문제가 아니다. 우리의 동기와 행복에 훨씬 더 중요한 것은 ‘삶 속에서의 의미’에 대한 질문","ts":"2026-07-12T01:49:00","skin":"gray","memo":""},{"id":"H17837885639711um5yy09q4h","noteId":2044,"quote":"우리는 지금 여기에서 삶의 의미에 대한 명확하고 보편적인 정답을 내놓지는 못할 것이라는 사실 말이다","ts":"2026-07-12T01:49:00","skin":"gray","memo":""},{"id":"H17837486690111g16ci5p7wd","noteId":2044,"quote":"자책감이나 슬픔을 안은 채 잠자리에 들면 그 감정들은 밤사이 더욱 심해질 뿐이다.","ts":"2026-07-11T14:44:00","skin":"gray","memo":""},{"id":"H1783565507606la5it1o16to","noteId":2042,"quote":"코리 교수는 매주 정원의 잔디를 깎을 때마다, 스스로를 ‘잔디 예술가’라고 상상한다고 해요. ‘이번엔 어떤 무늬를 그려볼까?’ 고민하며 마치 그림 그리듯 잔디를 깎는다면서요. 그럼 이 과정 자체가 재밌어진다는 거죠.","ts":"2026-07-09T11:51:00","skin":"gray","memo":""},{"id":"H1783565427357j5v7f5c2az","noteId":2042,"quote":"자신을 있는 그대로 받아들이는 수용acceptance스스로 선택하고 결정하는 자율성autonomy타인과 이어져 있다는 연결감connection무언가를 해낼 수 있다는 역량competence계속 성장하고 있다는 숙달감mastery내가 누군가에게 필요한 존재라는 대인존재감mattering","ts":"2026-07-09T11:50:00","skin":"gray","memo":""},{"id":"H1783392683932smpl5g02wzn","noteId":2040,"quote":"어떤 문제든 해결책을 3개씩 떠올려 보는 겁니다. 첫째, 나의 최선의 해결책은 무엇인가? 둘째, 만약 첫 해결책이 불가능하다면 어떻게 해야 할까? 셋째, 만약 아무런 제약이 없다면","ts":"2026-07-07T11:51:00","skin":"gray","memo":""}],"library":[{"noteId":2156,"readAt":"2026.11.03","pct":100},{"noteId":2164,"readAt":"2026.11.03","pct":100},{"noteId":2163,"readAt":"2026.11.03","pct":23},{"noteId":2161,"readAt":"2026.11.01","pct":34},{"noteId":2157,"readAt":"2026.10.27","pct":1},{"noteId":2154,"readAt":"2026.10.25","pct":40},{"noteId":2153,"readAt":"2026.10.23","pct":1},{"noteId":2152,"readAt":"2026.10.22","pct":14},{"noteId":2151,"readAt":"2026.10.21","pct":100},{"noteId":2149,"readAt":"2026.10.20","pct":100},{"noteId":2111,"readAt":"2026.10.20","pct":0},{"noteId":1575,"readAt":"2026.10.17","pct":2},{"noteId":1849,"readAt":"2026.10.17","pct":99},{"noteId":2148,"readAt":"2026.10.17","pct":100},{"noteId":2147,"readAt":"2026.10.16","pct":22},{"noteId":2144,"readAt":"2026.10.13","pct":27},{"noteId":2143,"readAt":"2026.10.12","pct":100},{"noteId":2141,"readAt":"2026.10.10","pct":100},{"noteId":2140,"readAt":"2026.10.09","pct":70},{"noteId":2114,"readAt":"2026.10.08","pct":55},{"noteId":2139,"readAt":"2026.10.08","pct":99},{"noteId":2137,"readAt":"2026.10.06","pct":4},{"noteId":2136,"readAt":"2026.10.05","pct":3},{"noteId":2134,"readAt":"2026.10.02","pct":100},{"noteId":2142,"readAt":"2026.10.02","pct":5},{"noteId":2133,"readAt":"2026.10.01","pct":3},{"noteId":2089,"readAt":"2026.10.01","pct":100},{"noteId":1971,"readAt":"2026.10.01","pct":100},{"noteId":2132,"readAt":"2026.09.30","pct":20},{"noteId":1321,"readAt":"2026.09.29","pct":85},{"noteId":2131,"readAt":"2026.09.29","pct":4},{"noteId":2130,"readAt":"2026.09.29","pct":70},{"noteId":2115,"readAt":"2026.09.29","pct":100},{"noteId":2109,"readAt":"2026.09.29","pct":100},{"noteId":2124,"readAt":"2026.09.27","pct":15},{"noteId":2123,"readAt":"2026.09.27","pct":100},{"noteId":2127,"readAt":"2026.09.26","pct":0},{"noteId":1301,"readAt":"2026.09.26","pct":100},{"noteId":451,"readAt":"2026.09.26","pct":2},{"noteId":1261,"readAt":"2026.09.26","pct":100},{"noteId":2129,"readAt":"2026.09.26","pct":100},{"noteId":2120,"readAt":"2026.09.25","pct":19},{"noteId":2128,"readAt":"2026.09.25","pct":99},{"noteId":2117,"readAt":"2026.09.25","pct":34},{"noteId":2126,"readAt":"2026.09.23","pct":56},{"noteId":2122,"readAt":"2026.09.19","pct":100},{"noteId":2121,"readAt":"2026.09.19","pct":100},{"noteId":2119,"readAt":"2026.09.16","pct":6},{"noteId":2118,"readAt":"2026.09.15","pct":5},{"noteId":2116,"readAt":"2026.09.12","pct":12},{"noteId":985,"readAt":"2026.09.11","pct":20},{"noteId":2113,"readAt":"2026.09.11","pct":95},{"noteId":2110,"readAt":"2026.09.09","pct":100},{"noteId":2101,"readAt":"2026.09.01","pct":100},{"noteId":2100,"readAt":"2026.08.31","pct":22},{"noteId":2090,"readAt":"2026.08.30","pct":92},{"noteId":2092,"readAt":"2026.08.30","pct":100},{"noteId":2098,"readAt":"2026.08.29","pct":3},{"noteId":2097,"readAt":"2026.08.28","pct":4},{"noteId":2096,"readAt":"2026.08.27","pct":0},{"noteId":2094,"readAt":"2026.08.26","pct":96},{"noteId":2095,"readAt":"2026.08.26","pct":95},{"noteId":2088,"readAt":"2026.08.24","pct":0},{"noteId":793,"readAt":"2026.08.21","pct":0},{"noteId":1769,"readAt":"2026.08.20","pct":10},{"noteId":1876,"readAt":"2026.08.20","pct":100},{"noteId":2084,"readAt":"2026.08.20","pct":100},{"noteId":2093,"readAt":"2026.08.20","pct":100},{"noteId":1866,"readAt":"2026.08.19","pct":21},{"noteId":2085,"readAt":"2026.08.19","pct":95},{"noteId":2087,"readAt":"2026.08.19","pct":100},{"noteId":2083,"readAt":"2026.08.15","pct":6}],"bookmarks":[{"noteId":2161,"readAt":"2026.11.01","pct":34,"bmAt":"2026. 11. 01."},{"noteId":2153,"readAt":"2026.10.23","pct":1,"bmAt":"2026. 10. 27."},{"noteId":2154,"readAt":"2026.10.25","pct":40,"bmAt":"2026. 10. 27."},{"noteId":2157,"readAt":"2026.10.27","pct":1,"bmAt":"2026. 10. 27."},{"noteId":2156,"readAt":"2026.11.03","pct":100,"bmAt":"2026. 10. 27."},{"noteId":2151,"readAt":"2026.10.21","pct":100,"bmAt":"2026. 10. 21."},{"noteId":1575,"readAt":"2026.10.17","pct":2,"bmAt":"2026. 10. 17."},{"noteId":1849,"readAt":"2026.10.17","pct":99,"bmAt":"2026. 10. 17."},{"noteId":2141,"readAt":"2026.10.10","pct":100,"bmAt":"2026. 10. 10."},{"noteId":1971,"readAt":"2026.10.01","pct":100,"bmAt":"2026. 10. 01."},{"noteId":1321,"readAt":"2026.09.29","pct":85,"bmAt":"2026. 09. 29."},{"noteId":2115,"readAt":"2026.09.29","pct":100,"bmAt":"2026. 09. 29."},{"noteId":2109,"readAt":"2026.09.29","pct":100,"bmAt":"2026. 09. 29."},{"noteId":1301,"readAt":"2026.09.26","pct":100,"bmAt":"2026. 09. 26."},{"noteId":451,"readAt":"2026.09.26","pct":2,"bmAt":"2026. 09. 26."},{"noteId":2120,"readAt":"2026.09.25","pct":19,"bmAt":"2026. 09. 25."},{"noteId":2117,"readAt":"2026.09.25","pct":34,"bmAt":"2026. 09. 25."},{"noteId":2119,"readAt":"2026.09.16","pct":6,"bmAt":"2026. 09. 16."},{"noteId":2118,"readAt":"2026.09.15","pct":5,"bmAt":"2026. 09. 15."},{"noteId":2116,"readAt":"2026.09.12","pct":12,"bmAt":"2026. 09. 12."},{"noteId":1876,"readAt":"2026.08.20","pct":100,"bmAt":"2026. 08. 20."},{"noteId":2087,"readAt":"2026.08.19","pct":100,"bmAt":"2026. 08. 19."},{"noteId":2068,"readAt":"2026.08.01","pct":43,"bmAt":"2026. 08. 01."},{"noteId":2066,"readAt":"2026.07.30","pct":100,"bmAt":"2026. 07. 30."},{"noteId":2057,"readAt":"2026.07.21","pct":100,"bmAt":"2026. 07. 21."},{"noteId":194,"readAt":"2026.07.19","pct":100,"bmAt":"2026. 07. 19."},{"noteId":2055,"readAt":"2026.07.18","pct":100,"bmAt":"2026. 07. 18."},{"noteId":2047,"readAt":"2026.07.14","pct":100,"bmAt":"2026. 07. 14."},{"noteId":2042,"readAt":"2026.07.09","pct":100,"bmAt":"2026. 07. 09."},{"noteId":1905,"readAt":"2026.07.05","pct":99,"bmAt":"2026. 07. 05."},{"noteId":1792,"readAt":"2026.07.05","pct":100,"bmAt":"2026. 07. 05."},{"noteId":2036,"readAt":"2026.07.04","pct":100,"bmAt":"2026. 07. 04."},{"noteId":2034,"readAt":"2026.07.03","pct":100,"bmAt":"2026. 07. 03."},{"noteId":654,"readAt":"2026.07.01","pct":100,"bmAt":"2026. 07. 01."},{"noteId":363,"readAt":"2026.07.01","pct":100,"bmAt":"2026. 07. 01."},{"noteId":2027,"readAt":"2026.06.26","pct":100,"bmAt":"2026. 06. 26."}],"home":{"lists":[{"title":"쌀쌀해진 날씨에 생각나는","type":"list","ids":[1536,1298,1786,830,504,545]},{"title":"딴짓이 만드는 새로운 세상","type":"carousel","ids":[1518,2117,1810,848,1186,1563]},{"title":"당신을 위한","type":"reco"},{"title":"실패를 마주할 때 변화가 시작된다","type":"list","ids":[5001,5002,5003,2148,5004,5005]},{"title":"색다른 도서관 탐방기","type":"carousel","ids":[5006,5007,5008,5009,5010,5011]}],"upcoming":[2165,2166,2167],"past":[2163,2162,2161,2160,2158,2159,2157,2156,2154],"related":[2122,5012,5013,5014,5015]},"keywords":["브랜딩","경영 전략","사업 기획","마케팅","디자인","자기계발","콘텐츠","테크","책 리뷰","F&B","패션/뷰티","웰니스","공간","트렌드","인문","예술","커머스","리더십","생산성","여행"],"totals":{"notes":1853,"read":713,"unfinished":270,"bookmarkedRead":104,"bookmarks":109,"shots":11,"memberDays":1110,"stampCard":62,"stampCount":7,"unexchanged":39},"user":{"name":"김파이","email":"kimphi@longblack.com","plan":"오늘의 노트 플랜"}};
+
+</script>
+<script>
+/* ───────── 롱블랙 모바일 V0 재현 — 코어 (상태 · 라우터 · 공통 UI · 홈 · 전체 노트) ───────── */
+(function () {
+'use strict';
+const D = window.LB_DATA;
+const NOTES = new Map(D.notes.map(n => [n.id, n]));
+const ED_NAME = { K: 'K', B: 'B', C: 'C', L: 'L', N: '뉴스픽스' };
+const ED_COLOR = { K: '#5962ff', B: '#d3b18d', C: '#9fe99e', L: '#ff5126', N: '#8dbcd7' };
+const HDR_COLORS = ['#5962ff', '#d3b18d', '#9fe99e'];
+const KEY = 'lb_v0_state_v2';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const fmtNum = n => Number(n).toLocaleString('ko-KR');
+const hash = s => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
+
+/* ── 상태 ── */
+function defaultState() {
+  const progress = {}, readAt = {};
+  D.library.forEach(l => { progress[l.noteId] = l.pct; readAt[l.noteId] = l.readAt; });
+  return {
+    scraps: D.scraps.map(s => ({ ...s })),
+    bookmarks: D.bookmarks.map(b => ({ noteId: b.noteId, bmAt: b.bmAt })),
+    progress, readAt,
+    ratings: {}, comments: {}, cups: {}, tips: {}, fs: 18, bell: false,
+    libExtra: [] // 프로토타입에서 새로 읽은 노트 [{noteId, readAt}]
+  };
+}
+let S;
+function load() { try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.scraps) return v; } catch (e) { } return null; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+S = load() || defaultState();
+// 기본 데이터에 없던 필드 보정
+S.libExtra = S.libExtra || []; S.cups = S.cups || {}; S.tips = S.tips || {};
+
+/* ── 유틸 ── */
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+function nav(hash) { location.hash = hash; }
+function parseHash() {
+  const h = location.hash.replace(/^#/, '') || '/';
+  const [path, qs] = h.split('?');
+  const params = {}; (qs || '').split('&').filter(Boolean).forEach(kv => { const [k, v] = kv.split('='); params[decodeURIComponent(k)] = decodeURIComponent(v || ''); });
+  return { path, params };
+}
+function noteDate(n) { if (n.date) return n.date; const h = hash(n.id) % 1000; const d = new Date(2025, 0, 1); d.setDate(d.getDate() - h); return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`; }
+function isBookmarked(id) { return S.bookmarks.some(b => b.noteId === id); }
+function toggleBookmark(id) {
+  const i = S.bookmarks.findIndex(b => b.noteId === id);
+  if (i >= 0) { S.bookmarks.splice(i, 1); toast('북마크를 해제했어요'); }
+  else { const d = new Date(); S.bookmarks.unshift({ noteId: id, bmAt: `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}.` }); toast('북마크에 추가했어요'); }
+  save();
+  $$(`[data-bm="${id}"]`).forEach(b => b.classList.toggle('on', isBookmarked(id)));
+}
+function phStyle(n) { const h = hash(n.id) % 360; return `--ph:hsl(${h} 32% ${56 + (hash(n.id + 'l') % 14)}%)`; }
+function thumb(n, { bm = true, label = true, cls = '' } = {}) {
+  const short = n.short || n.title.split(' : ')[0];
+  return `<div class="thumb ${cls}"><div class="ph" style="${phStyle(n)}"><i></i>${label ? `<b>${esc(short.slice(0, 18))}</b>` : ''}</div>
+    ${n.series ? `<div class="ribbon ${n.series === 'NewsPicks' ? 'n' : 'b'}">${esc(n.series)}</div>` : ''}
+    ${bm ? `<button class="bm ${isBookmarked(n.id) ? 'on' : ''}" data-bm="${n.id}" data-act="bm" aria-label="북마크">${I.bookmark}</button>` : ''}</div>`;
+}
+function edTag(n) { return `<span class="ed ${n.ed}">${esc(ED_NAME[n.ed] || n.ed)}</span>`; }
+
+/* ── 아이콘 ── */
+const I = {
+  search: '<svg class="ico" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>',
+  menu: '<svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+  x: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>',
+  chev: '<svg class="ico" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+  chevd: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg>',
+  chevu: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>',
+  bookmark: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
+  share: '<svg class="ico" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg>',
+  play: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z"/></svg>',
+  playf: '<svg class="ico f" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>',
+  bell: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 20a2 2 0 004 0"/></svg>',
+  chat: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 12a8 7 0 1116 0 8 7 0 01-11 6.5L4 20l1.5-3.6A6.6 6.6 0 014 12z"/></svg>',
+  gear: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+  clock: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M3 12a9 9 0 013-6.7" stroke-dasharray="2 3"/></svg>',
+  info: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  star: '<svg class="star" viewBox="0 0 24 24"><path d="M12 2.8l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.7l-5.9 3.1 1.2-6.5L2.5 9.7l6.6-.9z"/></svg>',
+  compass: '<svg class="ico f" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm3.5 6.5l-2 5.5-5.5 2 2-5.5z"/></svg>',
+  listv: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/></svg>',
+  gridv: '<svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>',
+  memo: '<svg class="ico" viewBox="0 0 24 24"><path d="M14 4.5H4.5v15h15V10"/><path d="M20.5 3.5L10 14v3h3L23.5 6.5z"/></svg>',
+  palette: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 2.5a9.5 9.5 0 100 19c1.5 0 2-1 1.5-2s0-2 1.5-2h1.5a4 4 0 004-4c0-6-4-11-8.5-11z"/><circle cx="7.5" cy="12" r="1.2"/><circle cx="10" cy="7.5" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/></svg>',
+  download: '<svg class="ico" viewBox="0 0 24 24"><path d="M4.5 19.4h15v-6.5M12 3v11M8 10l4 4 4-4"/></svg>',
+  trash: '<svg class="ico" viewBox="0 0 24 24"><path d="M3 6.7h18M8 6.7V3.5h8v3.2M5 6.7l1 14.3h12l1-14.3M10 10v8M14 10v8"/></svg>',
+  edit: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16z"/></svg>',
+  logout: '<svg class="ico" viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg>',
+  arrow: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 12h16M13 5l7 7-7 7"/></svg>',
+  gplay: '<svg class="ico f" viewBox="0 0 24 24"><path d="M4 3l10 9-10 9z"/><path d="M14 12l4-3 3 3-3 3z" opacity=".7"/></svg>',
+  apple: '<svg class="ico f" viewBox="0 0 24 24"><path d="M16 12.5c0-2.4 2-3.5 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.5-.2-2.9.9-3.6.9-.8 0-1.9-.9-3.1-.8-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 3 2.4 1.2 0 1.6-.8 3.1-.8 1.4 0 1.8.8 3.1.8 1.3 0 2.1-1.2 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.6-1-2.6-4.1zM13.5 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg>',
+};
+
+/* ── 공통 UI ── */
+function pickHdr() { return HDR_COLORS[Math.floor(Math.random() * HDR_COLORS.length)]; }
+function header({ color = false, allnotes = false, banner = false, cls = '' } = {}) {
+  const bg = color ? pickHdr() : '#282828';
+  return `${banner ? `<a class="topbanner" href="#/biz"><p>롱블랙 Team Pass</p>${I.chev}</a>` : ''}
+  <div class="hdr ${color ? 'color' : ''} ${cls}" style="--hdr:${bg}">
+    <a class="lg" href="#/"><span class="logo">LongBlack</span></a>
+    <div class="r">${allnotes ? `<a class="allnotes" href="#/note">전체 노트</a>` : `<a class="ib" href="#/search" aria-label="검색">${I.search}</a>`}
+    <button class="ib" data-act="drawer" aria-label="메뉴">${I.menu}</button></div>
+  </div>`;
+}
+function footer() {
+  return `<footer class="foot">
+    <button class="biz">(주)타임앤코 사업자 정보 ${I.chevd}</button>
+    <div class="g"><h5>소개</h5><a href="#/about">롱블랙 소개</a><a href="#/about">인재채용</a><a href="#/about">광고 및 협업 문의</a><a href="#/biz">팀 패스(B2B)</a></div>
+    <div class="g"><h5>서비스</h5><a href="#/article">공지사항</a><a href="#/faq">고객센터</a><a href="#/faq">이용약관</a><a href="#/faq">개인정보 처리방침</a></div>
+    <div class="g"><h5>소셜</h5><a href="#/about">인스타그램</a><a href="#/about">팀 블로그</a></div>
+    <div class="apps"><a href="#/about">${I.gplay} Google Play</a><a href="#/about">${I.apple} App Store</a></div>
+  </footer>`;
+}
+function drawerHTML() {
+  return `<div class="ov" id="drawer"><div class="dim" data-act="drawer-close"></div>
+  <nav class="drawer">
+    <button class="x" data-act="drawer-close" aria-label="닫기">${I.x}</button>
+    <div class="acct"><div class="chip"><b>${esc(D.user.plan)}</b><span>이용중</span></div><div class="nm"><b>${esc(D.user.name)}</b>님</div><div class="em">${esc(D.user.email)}</div></div>
+    <div class="blk k"><a href="#/history">마이페이지</a><a href="#/membership">플랜 변경</a><a href="#/shot">샷추가</a><a href="#/gift">선물하기</a></div>
+    <div class="blk p">${S.tips.drawer ? '' : `<div class="tip" id="drawerTip">다른 콘텐츠도 둘러보세요! <button data-act="tip-close" data-tip="drawer">${I.x}</button></div>`}<a href="#/note">전체 노트</a><a href="#/scrap">문장스크랩</a><a href="#/search">검색</a></div>
+    <div class="blk t"><a href="#/selection">롱블랙 셀렉션</a><a href="#/play">플레이 <span class="gamebadge">롱블랙 GAME</span></a></div>
+    <div class="blk w"><a href="#/biz">B2B</a></div>
+    <div class="dfoot"><a href="#/faq">고객센터</a><a href="#/article">공지사항</a></div>
+    <a class="logout" href="#/logout">로그아웃 ${I.logout}</a>
+  </nav></div>`;
+}
+function openDrawer() { $('#drawer').classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { $('#drawer').classList.remove('show'); document.body.style.overflow = ''; }
+function pager(page, total, act) {
+  if (total <= 1) return '';
+  const win = 5; let start = Math.max(1, Math.min(page - 2, total - win + 1)); const end = Math.min(total, start + win - 1);
+  let h = '<div class="pager">';
+  if (start > 1) h += `<button class="nav" data-act="${act}" data-page="${start - 1}" aria-label="이전">${I.chevd.replace('class="ico"', 'class="ico" style="transform:rotate(90deg)"')}</button>`;
+  for (let p = start; p <= end; p++) h += `<button class="${p === page ? 'on' : ''}" data-act="${act}" data-page="${p}">${p}</button>`;
+  if (end < total) h += `<button class="nav" data-act="${act}" data-page="${end + 1}" aria-label="다음">${I.chev}</button>`;
+  return h + '</div>';
+}
+function modal(html, { onOpen } = {}) {
+  const m = $('#modal'); m.innerHTML = `<div class="dim" data-act="modal-close"></div><div class="box">${html}</div>`; m.classList.add('show');
+  if (onOpen) onOpen(m);
+}
+function closeModal() { $('#modal').classList.remove('show'); $('#modal').innerHTML = ''; }
+function confirmModal(title, body, okLabel, onOk) {
+  modal(`<h4>${esc(title)}</h4><p style="margin-top:12px;text-align:center;font-size:14px;color:#666;line-height:22px">${esc(body)}</p><div class="btns"><button data-act="modal-close">취소</button><button class="danger" id="confirmOk">${esc(okLabel)}</button></div>`,
+    { onOpen: m => $('#confirmOk', m).onclick = () => { closeModal(); onOk(); } });
+}
+function clockHTML() {
+  const t = toMidnight();
+  return `<div class="clock" data-clock><span>${pad(t.h)}</span><i>:</i><span>${pad(t.m)}</span><i>:</i><span>${pad(t.s)}</span></div>`;
+}
+function toMidnight() { const n = new Date(), e = new Date(n); e.setHours(24, 0, 0, 0); let s = Math.max(0, Math.floor((e - n) / 1000)); return { h: Math.floor(s / 3600), m: Math.floor(s % 3600 / 60), s: s % 60 }; }
+setInterval(() => { const t = toMidnight(); $$('[data-clock]').forEach(el => { const sp = el.querySelectorAll('span'); if (sp.length === 3) { sp[0].textContent = pad(t.h); sp[1].textContent = pad(t.m); sp[2].textContent = pad(t.s); } else el.textContent = `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`; }); }, 1000);
+
+/* ── 홈 ── */
+function rowItem(n) {
+  return `<a class="row" href="#/note/${n.id}">${thumb(n)}<div class="t"><h3>${esc(n.short || n.title.split(' : ')[0])}</h3><p class="clamp2">${esc(n.sub || n.title.split(' : ').slice(1).join(' : ') || n.title)}</p><div class="rate">${I.star}<b>${n.rating}</b><span>(${fmtNum(n.count)})</span></div></div></a>`;
+}
+function cardItem(n) {
+  return `<a class="card" href="#/note/${n.id}">${thumb(n)}<h3>${esc(n.short || n.title.split(' : ')[0])}</h3><p class="clamp2">${esc(n.sub || n.title.split(' : ').slice(1).join(' : ') || n.title)}</p><div class="rate">${I.star}<b>${n.rating}</b><span>(${fmtNum(n.count)})</span></div></a>`;
+}
+function renderHome() {
+  const today = D.notes.find(n => n.today);
+  const H = D.home;
+  let secs = '';
+  H.lists.forEach(sec => {
+    if (sec.type === 'reco') {
+      secs += `<section class="reco"><div class="hd"><p>당신을 위한</p><span class="tag">BETA</span><button class="i" data-act="reco-tip">${I.info}</button>
+        ${`<div class="pop" id="recoPop">선택한 관심사와 롱블랙의 추천 알고리즘을 통해, 아직 안 읽은 노트 중 가장 만족하실 만한 노트를 엄선해 드립니다.<button class="x" data-act="tip-close" data-tip="reco">${I.x}</button></div>`}</div>
+        <div class="box"><div class="in"><div class="ill"></div><p>관심사를 설정하고<br>노트를 추천받으세요!</p><button class="btn" data-act="toast" data-msg="관심사 설정 (프로토타입)">관심사 설정 ${I.chev}</button></div></div></section>`;
+    } else if (sec.type === 'list') {
+      secs += `<section class="sec"><h2>${esc(sec.title)}</h2><div class="items">${sec.ids.map(id => rowItem(NOTES.get(id))).join('')}</div></section>`;
+    } else {
+      secs += `<section class="sec" style="padding-right:0"><h2>${esc(sec.title)}</h2><div class="hscroll car" style="padding-right:20px">${sec.ids.map(id => cardItem(NOTES.get(id))).join('')}</div></section>`;
+    }
+  });
+  const upc = H.upcoming.map((id, i) => { const n = NOTES.get(id); const col = ['#d3b18d', '#9fe99e', '#5962ff'][i] || ED_COLOR[n.ed]; return `<div class="it">
+      <div class="band" style="background:${col}"><div class="dday" style="${i === 0 ? `background:#282828;color:${col}` : 'background:#fff;color:#191919'}"><span>D</span><span>${n.dday}</span></div></div>
+      <div class="img"><div class="ph" style="background:${col}"></div><p>${esc(n.upcoming)} 공개</p></div>
+      <h3 class="clamp2">${esc(n.title)}</h3><div class="by"><span>${esc(n.author)}</span>${edTag(n)}</div></div>`; }).join('');
+  const past = H.past.map(id => { const n = NOTES.get(id); return `<a class="it" href="#/note/${n.id}">${thumb(n)}<div class="t"><h3 class="clamp3">${esc(n.title)}</h3><div class="by"><span>${esc(n.author)}</span>${edTag(n)}</div></div></a>`; }).join('');
+  return `${header({ color: true, banner: true })}
+  <main>
+    <a class="hero" href="#/note/${today.id}">
+      <div class="img"><div class="mark">Atlas Obscura</div><div class="sun"></div>
+        <div class="pin" style="left:96px;top:118px"></div><div class="pin" style="left:206px;top:150px"></div><div class="pin" style="left:150px;bottom:44px"></div><div class="pin" style="right:34px;bottom:56px"></div>
+        <div class="today">TODAY</div></div>
+      <div class="body">
+        ${S.tips.hero !== false ? '' : `<div class="tip"><svg class="lib" viewBox="0 0 32 22" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="3" width="26" height="16" rx="2"/><path d="M8 3v16M14 3v16M20 3v16"/></svg>이 노트를 오늘 안에 읽으면<br><b>라이브러리에 저장</b>할 수 있어요!<button class="x" data-act="tip-close" data-tip="hero">${I.x}</button></div>`}
+        <div class="timer"><div class="l">${I.clock}<p>이 시간이 지나면<br>읽을 수 없습니다.</p></div>${clockHTML()}</div>
+        <h2>${esc(today.title)}</h2>
+      </div>
+    </a>
+    <a class="game" href="#/play"><div class="px"></div><div class="in"><p>매일 게임하고<br><b>다양한 보상</b>을 받아가세요</p><span class="play">Play</span></div></a>
+    ${secs}
+    <section class="upc"><div class="hd"><div><h2>공개 예정 노트</h2><p class="s">하루에 하나씩 공개됩니다.</p></div><button class="bell" data-act="toast" data-msg="롱블랙 앱에서 알림을 받을 수 있어요">${I.bell}</button>
+      ${S.tips.upc ? '' : `<div class="tip" data-act="tip-close" data-tip="upc">롱블랙 앱으로 노트 알림을 받아보세요!</div>`}</div>${upc}</section>
+    <section class="slider"><div class="bar"><b class="on"></b><b></b></div><div class="track" id="slider"><div style="background:linear-gradient(135deg,#2c2c2c,#5e4b8b)">팀 패스로 함께 읽는 롱블랙<br><small style="font-weight:400;font-size:14px;opacity:.8">B2B 멤버십 안내</small></div><div style="background:linear-gradient(135deg,#1d3557,#457b9d)">롱블랙 5주년, 1803편의 노트<br><small style="font-weight:400;font-size:14px;opacity:.8">성수동 팝업 카페</small></div></div><div class="pg"><b id="sliderPg">1</b>/2</div></section>
+    <section class="past"><div class="hd"><h2>지난 노트</h2></div>${past}</section>
+  </main>${footer()}`;
+}
+
+/* ── 전체 노트 ── */
+const LIST = { q: '', kw: '', sort: '최신순', free: false, view: 'list', page: 1, open: false };
+function sortedCatalog() {
+  return D.notes.filter(n => !n.upcoming).sort((a, b) => noteDate(b).localeCompare(noteDate(a)) || b.id - a.id);
+}
+function renderNoteList() {
+  let items = sortedCatalog();
+  if (LIST.q) { const q = LIST.q.toLowerCase(); items = items.filter(n => (n.title + ' ' + n.author + ' ' + (n.kw || []).join(' ')).toLowerCase().includes(q)); }
+  if (LIST.kw) items = items.filter(n => (n.kw || []).includes(LIST.kw));
+  if (LIST.free) items = [];
+  if (LIST.sort === '과거순') items.reverse();
+  if (LIST.sort === '별점순') items.sort((a, b) => b.rating - a.rating || b.count - a.count);
+  const per = 20, total = Math.max(1, Math.ceil(items.length / per)); LIST.page = Math.min(LIST.page, total);
+  const pageItems = items.slice((LIST.page - 1) * per, LIST.page * per);
+  const filtered = LIST.q || LIST.kw || LIST.free;
+  const count = filtered ? items.length : D.totals.notes;
+  const list = LIST.view === 'list'
+    ? `<div class="nlist">${pageItems.map(n => `<a class="nrow" href="#/note/${n.id}">${thumb(n)}<div class="t"><h3 class="clamp3">${esc(n.title)}</h3><div class="by">${edTag(n)}<span class="sep">|</span><span class="au">${esc(n.author)}</span></div></div></a>`).join('')}</div>`
+    : `<div class="ngrid">${pageItems.map(n => `<a href="#/note/${n.id}">${thumb(n)}<h3 class="clamp2">${esc(n.title)}</h3><div class="by">${edTag(n)}<span>${esc(n.author)}</span></div></a>`).join('')}</div>`;
+  return `${header()}<main class="list-page">
+    <h1>전체 노트</h1>
+    <div class="sbox">${I.search}<input id="listQ" placeholder="검색어를 입력하세요." value="${esc(LIST.q)}"></div>
+    <div class="kwhd">${I.compass}<p>원하는 <b>키워드</b>를 골라보세요!</p></div>
+    <div class="kws">${[D.keywords.slice(0, 11), D.keywords.slice(11)].map(row => `<div class="kwrow">${row.map(k => `<button class="${LIST.kw === k ? 'on' : ''}" data-act="kw" data-kw="${esc(k)}">${esc(k)}</button>`).join('')}</div>`).join('')}</div>
+    <a class="npbanner" href="#/search?q=NewsPicks"><div><p>1150만 회원이 보는<br><b>일본 최고의</b> 비즈니스 미디어</p><p class="go">롱블랙에서 읽기 ›</p></div><div class="lg">News<br>Picks</div></a>
+    <div class="cnt"><p>총 <b>${fmtNum(count)}</b> 개</p><button class="sortbtn" data-act="list-sort">${esc(LIST.sort)} ${LIST.open ? I.chevu : I.chevd}${LIST.open ? `<div class="dd">${['최신순', '과거순', '별점순'].map(s => `<button class="${LIST.sort === s ? 'on' : ''}" data-act="list-sort-set" data-sort="${s}">${s}</button>`).join('')}</div>` : ''}</button></div>
+    <div class="filt"><button class="chip ${LIST.free ? 'on' : ''}" data-act="list-free">위드롱블랙 <b>FREE</b></button><div class="views"><button class="${LIST.view === 'list' ? 'on' : ''}" data-act="list-view" data-view="list">${I.listv}</button><button class="${LIST.view === 'grid' ? 'on' : ''}" data-act="list-view" data-view="grid">${I.gridv}</button></div></div>
+    ${pageItems.length ? list : '<div class="empty">조건에 맞는 노트가 없습니다.</div>'}
+    ${pager(LIST.page, total, 'list-page')}
+  </main>${footer()}`;
+}
+
+window.LB = { D, NOTES, S, save, $, $$, esc, pad, fmtNum, hash, I, ED_NAME, ED_COLOR, toast, nav, parseHash, noteDate, isBookmarked, toggleBookmark, thumb, edTag, header, footer, drawerHTML, openDrawer, closeDrawer, pager, modal, closeModal, confirmModal, clockHTML, toMidnight, renderHome, renderNoteList, LIST, sortedCatalog, rowItem, cardItem, phStyle };
+})();
+
+</script>
+<script>
+/* ───────── 화면: 노트 상세 · 문장스크랩 · 마이페이지 · 검색 · 기타 · 라우터 ───────── */
+(function () {
+'use strict';
+const L = window.LB; const { D, NOTES, S, save, $, $$, esc, pad, fmtNum, hash, I, ED_NAME, ED_COLOR, toast, nav, parseHash, noteDate, isBookmarked, toggleBookmark, thumb, edTag, header, footer, pager, modal, closeModal, confirmModal, clockHTML } = L;
+
+/* ═══════════ 노트 상세 ═══════════ */
+const PH = ['이 문단은 자리표시 문장입니다. 원문 문단과 비슷한 길이로 줄바꿈과 스크롤 흐름을 확인하기 위한 문장이 이어집니다. 실제 노트에서는 취재한 이야기와 인용이 이 자리에 들어갑니다.',
+  '두 번째 자리표시 문단입니다. 문장을 길게 눌러 선택하면 ‘문장스크랩’과 ‘메모’ 버튼이 나타납니다. 스크랩한 문장은 연보라색으로 표시되고, 문장스크랩 화면에 카드로 쌓입니다.',
+  '세 번째 자리표시 문단입니다. 읽은 위치는 상단 진행 바와 마이페이지 라이브러리의 퍼센트에 반영됩니다. 오늘 안에 읽은 노트는 라이브러리에 저장됩니다.'];
+const STRUCT_2164 = [
+  { ch: 'Chapter 1.', title: '관광안내소가 알려주지 않는 것들', blocks: ['p', 'p', 'q', 'p', 'p', 'fig'] },
+  { ch: 'Chapter 2.', title: '‘대충 포장된 낭만’에 불만을 갖다', blocks: ['p', 'p', 'fn', 'p', 'q', 'fig', 'h:모험가의 참견을 수집하다', 'p', 'p', 'q', 'p', 'fig'] },
+  { ch: 'Chapter 3.', title: '거두절미하고 ‘두근거리는 이야기’를 꺼내라', blocks: ['p', 'p', 'q', 'p', 'fig', 'h:유저의 장소 제보 + 에디터의 관점으로 고도화', 'p', 'p', 'q', 'p', 'fig'] },
+  { ch: 'Chapter 4.', title: '‘언젠가’라는 망설임을, ‘지금 떠나는 상품’으로 이끌다', blocks: ['p', 'p', 'p', 'q', 'p', 'fn', 'q', 'fig'] },
+  { ch: 'Chapter 5.', title: '천재지변을 이기는 자산 활용법', blocks: ['p', 'h:① 관광청의 홍보 수요를 붙잡다', 'p', 'p', 'q', 'fig', 'h:② 자동차 회사에 ‘달리고 싶은 이유’를 팔다', 'p', 'p', 'p', 'q', 'fig'] },
+  { ch: 'Chapter 6.', title: '우리의 호기심을 막는 로컬 블라인드니스Local Blindness', blocks: ['p', 'p', 'q', 'p', 'q', 'fig'] },
+];
+const INTRO_2164 = ['프랑스 파리까지 가서 에펠탑을 안 볼 수는 없겠죠. 그런데 누군가 “에펠탑 꼭대기에 비밀 아파트가 있다”고 알려준다면요? 같은 곳으로 향하는 여행객의 시선도 조금 달라질 것 같아요.',
+  '미국의 여행 미디어 아틀라스 옵스큐라Atlas Obscura, 이하 AO는 이런 ‘덜 알려진 여행 정보’들만 모아요. 자동차 39대가 서 있는 사막, 바나나가 놓인 원숭이 무덤처럼요.'];
+const NOTE = { id: null, playing: false, remain: 0, pt: null, lastY: 0, acc: 0, up: true };
+
+function noteScraps(id) { return S.scraps.filter(s => s.noteId === id).sort((a, b) => a.ts.localeCompare(b.ts)); }
+function articleHTML(n) {
+  const scraps = noteScraps(n.id);
+  const extra = scraps.map(s => s.quote); // 본문 안에 실제 스크랩 문장을 문단으로 배치
+  let ei = 0; const nextScrap = () => ei < extra.length ? `<p data-scrap-p>${esc(extra[ei++])}</p>` : '';
+  let h = `<div class="by">롱블랙 프렌즈 ${esc(ED_NAME[n.ed] === '뉴스픽스' ? '뉴스픽스' : n.ed)}</div>`;
+  const block = (b, i) => {
+    if (b === 'p') return `<p class="ph">${PH[i % PH.length]}</p>` + ((i % 2 === 1) ? nextScrap() : '');
+    if (b === 'q') return `<blockquote>자리표시 인용문입니다. 원문에서는 인물의 발언이 이 자리에 들어갑니다.<cite>_인물, 연도 출처 인터뷰에서</cite></blockquote>`;
+    if (b === 'fn') return `<div class="fn">*자리표시 각주입니다.</div>`;
+    if (b === 'fig') return `<figure><div class="thumb"><div class="ph" style="${L.phStyle({ id: n.id * 7 + i })}"><i></i></div></div><figcaption>자리표시 사진 설명입니다. ©출처</figcaption></figure>`;
+    if (b.startsWith('h:')) return `<h4>${esc(b.slice(2))}</h4>`; return '';
+  };
+  if (n.id === 2164) {
+    h += INTRO_2164.map(p => `<p>${esc(p)}</p>`).join('') + `<p class="ph">${PH[2]}</p>`;
+    STRUCT_2164.forEach(s => { h += `<h2>${s.ch}</h2><h3>${esc(s.title)}</h3>` + s.blocks.map(block).join(''); });
+  } else {
+    const chapters = 3 + (hash(n.id) % 3);
+    for (let c = 0; c < chapters; c++) {
+      h += `<h2>Chapter ${c + 1}.</h2><h3>${esc(['노트의 첫 장면', '문제를 발견하다', '방법을 설계하다', '숫자로 증명하다', '다시, 일상으로'][c] || '자리표시 장 제목')}</h3>`;
+      const bl = ['p', 'p', 'q', 'p', 'p', 'fig'].slice(0, 4 + (hash(n.id + c) % 3));
+      h += bl.map((b, i) => block(b, i + c)).join('');
+    }
+  }
+  while (ei < extra.length) h += nextScrap();
+  h += `<div class="by" style="margin-top:50px">롱블랙 프렌즈 ${esc(n.ed)}</div><p class="ph">${PH[0]}</p>`;
+  if (!n.today) h += `<a class="share24" href="#" data-act="share">24시간 무료 링크를 공유해 보세요!</a>`;
+  return h;
+}
+function renderNote(id, params) {
+  const n = NOTES.get(id); if (!n) return `${header({ allnotes: true })}<div class="empty">노트를 찾을 수 없습니다. (${id})</div>${footer()}`;
+  NOTE.id = id; NOTE.playing = false; clearInterval(NOTE.pt);
+  if (n.upcoming) return `${header({ allnotes: true })}<div class="empty">${esc(n.upcoming)}에 공개되는 노트입니다.</div>${footer()}`;
+  const dur = n.dur || `${12 + hash(id) % 9}:${pad(hash(id + 'x') % 60)}`; NOTE.remain = dur.split(':').reduce((a, b) => a * 60 + +b, 0);
+  const rel = D.home.related.map(i => NOTES.get(i));
+  const upc = D.home.upcoming.map(i => NOTES.get(i));
+  const r = S.ratings[id] || 0; const cmts = (S.comments[id] || []);
+  return `<div class="notebar up" id="notebar"><div class="layer">${header({ allnotes: true }).replace('class="hdr', 'class="hdr nb')}
+    <div class="tools">
+      <button class="tb ${isBookmarked(id) ? 'on' : ''}" data-act="bm" data-bm="${id}" aria-label="북마크">${I.bookmark}</button>
+      <button class="tb" data-act="share" aria-label="공유">${I.share}</button>
+      <button class="tb" data-act="play" id="tbPlay" aria-label="듣기">${I.play}</button>
+      <button class="tb ${S.bell ? 'on' : ''}" data-act="bell" aria-label="알림">${I.bell}</button>
+      <button class="tb" data-act="scroll-to" data-to="#coffee" aria-label="커피챗">${I.chat}<span class="dot"></span></button>
+      <button class="tb set" data-act="settings" aria-label="설정">${I.gear}</button>
+    </div></div><div class="prog"><i id="prog"></i></div></div>
+  <main class="note" style="--fs:${S.fs}px">
+    ${n.today ? `<div class="tab">오늘의 노트</div><div class="tline"></div>` : `<div class="tline nt"></div>`}
+    <h1>${esc(n.title)}</h1>
+    <div class="meta"><span>롱블랙</span><span class="bar">|</span>${edTag(n)}<span class="dt">${esc(noteDate(n))}</span><a class="seal" href="#/stamp" title="stamp seal">LB</a></div>
+    <div class="audio"><button class="pl" id="plBtn" data-act="play">${I.playf}</button><span class="beta">BETA</span><span class="lb">소요 시간</span><span class="du" id="du">${dur}</span><button class="inf" data-act="toast" data-msg="오디오로 들을 때 걸리는 시간입니다">${I.info}</button></div>
+    <div class="author"><div class="av"></div><div class="ln"></div></div>
+    <article class="article" id="article" style="font-size:var(--fs)">${articleHTML(n)}</article>
+    <div class="copyright">롱블랙의 모든 콘텐츠는 제공자와 롱블랙에 저작권이 있습니다.<br>저작권법에 의거 무단 전재 및 재배포, AI 학습 및 활용을 금지합니다.<br><span style="color:#bbb">(재현본: 본문은 자리표시 문장, 연보라 문장은 내가 스크랩한 문장)</span></div>
+  </main>
+  <section class="blk rating"><h3>어떠셨나요?</h3><p>읽은 노트에 평점을 주세요!</p><div class="stars">${[1, 2, 3, 4, 5].map(k => `<button class="${k <= r ? 'on' : ''}" data-act="rate" data-v="${k}">★</button>`).join('')}</div></section>
+  <section class="blk chat" id="coffee"><div class="hd"><h3>노트 커피챗</h3><div class="clock" data-clock>00:00:00</div></div><p class="sub">오늘 하루만, 이 노트에서 대화할 수 있어요</p>
+    <div class="rew"><div><b>샷 1개</b>베스트 의견 *자정기준</div><div><b>스탬프 1개</b>오늘 컵을 2개 이상 받은 의견</div></div>
+    <p class="sub">오늘, 이 노트를 함께 읽은 독자들이 모였어요. 읽은 감상을 나눠보세요.</p>
+    <div class="compose"><div class="me">${esc(D.user.name)} <span style="font-weight:400;color:#999">나</span></div><textarea id="cmtTa" maxlength="1000" placeholder="감상을 남겨주세요"></textarea><div class="crow"><span class="n"><span id="cmtN">0</span>/1000</span><button class="reg" data-act="cmt-add">의견 등록</button></div></div>
+    <p class="note-s">타인에게 불쾌감을 주는 욕설, 비방, 정치적 발언 등은 예고 없이 삭제될 수 있습니다.<br>노트 내용과 무관한 서비스 개선 요청 및 CS 문의는 1:1 문의를 이용해 주시면 더욱 신속하게 답변해 드릴 수 있습니다.</p>
+    <h3 style="margin-top:24px">의견 <span style="color:#ff5126">${109 + cmts.length}</span></h3>
+    <div id="cmts">${commentsHTML(id)}</div>
+    <div class="alarm"><span>인기 의견의 알림을<br>받고 싶으신가요?</span><button data-act="toast" data-msg="앱 설치 안내 (프로토타입)">앱 설치하고 알림받기</button></div>
+    <button class="morebtn" data-act="toast" data-msg="전체 의견 (프로토타입)">${109 + cmts.length}개의 전체 의견 보러가기</button>
+  </section>
+  <section class="blk rel" style="padding-right:0"><h3>함께 읽기 좋은 노트</h3><div class="hscroll" style="padding-right:20px">${rel.map(L.cardItem).join('')}</div><a class="morebtn" href="#/note" style="margin-right:20px;width:auto">전체 노트 보러가기</a></section>
+  <section class="blk rel" style="padding-right:0"><h3>롱블랙 셀렉션 혜택 <span class="beta" style="display:inline-block;vertical-align:middle;height:22px;padding:2px 6px;border-radius:4px;background:#efe9ff;color:#8762ff;font-size:12px;font-weight:600;line-height:18px">멤버십 ONLY</span></h3>
+    <div class="hscroll" style="padding-right:20px">${[['표기식 사진전', '관람 티켓 40% 할인'], ['브래드 월스 사진전', '관람 티켓 40% 할인'], ['밴루엔', '스쿱 / 샘플러 20% 할인']].map((s, i) => `<a class="sel-item" href="#/selection"><div class="thumb"><div class="ph" style="--ph:hsl(${30 + i * 90} 20% 60%)"><i></i></div></div><h4>${s[0]}</h4><p>${s[1]}</p><div class="shot">샷 1개</div></a>`).join('')}</div>
+    <a class="morebtn" href="#/selection" style="margin-right:20px;width:auto">더 많은 셀렉션 혜택 보러가기</a></section>
+  <section class="blk"><h3>공개 예정 노트</h3>${upc.map(u => `<div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #e7e7e7"><div style="flex:0 0 46px;height:46px;border-radius:50%;background:#191919;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px">D-${u.dday}</div><div><div style="font-weight:700;font-size:15px;line-height:1.45">${esc(u.title)}</div><div style="font-size:12px;color:#999;margin-top:4px">${esc(u.author)} ${edTag(u)}</div></div></div>`).join('')}</section>
+  ${footer()}
+  ${n.today ? '' : `<a class="fixshare" href="#" data-act="share"><span class="ic">${I.share}</span>24시간 <b>무료 링크</b>를 공유해 보세요!</a>`}
+  <div class="selpop hidden" id="selpop"><button data-act="sel-scrap">문장스크랩</button><button data-act="sel-memo">메모</button></div>`;
+}
+function commentsHTML(id) {
+  const base = [{ who: '독자 A', best: true, when: '8시간 전', txt: '자리표시 의견입니다. 노트를 읽고 든 생각을 짧게 남긴 형태입니다.', cups: 32 }, { who: '독자 B', best: true, when: '6시간 전 (수정됨)', txt: '자리표시 의견입니다. 자신의 경험과 노트 내용을 연결한 조금 더 긴 의견이 이 자리에 들어갑니다.', cups: 17 }, { who: '독자 C', best: true, when: '6시간 전', txt: '자리표시 의견입니다. 노트의 메시지를 한 문장으로 정리한 형태입니다.', cups: 16 }];
+  const mine = (S.comments[id] || []).map(c => ({ ...c, who: D.user.name }));
+  return [...mine, ...base].map((c, i) => { const k = id + ':' + i; const on = !!S.cups[k]; return `<div class="cm"><div class="who">${c.best ? '<span class="best">BEST</span>' : ''}${esc(c.who)} <span class="when">${esc(c.when)}</span></div><p>${esc(c.txt)}</p><div class="acts"><button class="cup ${on ? 'on' : ''}" data-act="cup" data-k="${k}">☕ ${c.cups + (on ? 1 : 0)}</button><button data-act="toast" data-msg="답글 (프로토타입)">의견 달기</button></div></div>`; }).join('');
+}
+/* 스크랩 하이라이트: 본문 텍스트에서 인용문을 찾아 <mark>로 감싼다 */
+function applyHighlights() {
+  const art = $('#article'); if (!art) return;
+  noteScraps(NOTE.id).forEach(s => {
+    if (art.querySelector(`mark[data-scrap="${s.id}"]`)) return;
+    const walker = document.createTreeWalker(art, NodeFilter.SHOW_TEXT);
+    let node; while ((node = walker.nextNode())) {
+      if (node.parentElement.closest('mark')) continue;
+      const i = node.textContent.indexOf(s.quote); if (i < 0) continue;
+      const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + s.quote.length);
+      const m = document.createElement('mark'); m.dataset.scrap = s.id; m.dataset.act = 'mark'; r.surroundContents(m); break;
+    }
+  });
+}
+function noteAfterRender(params) {
+  applyHighlights();
+  NOTE.lastY = window.scrollY; NOTE.acc = 0; NOTE.up = true;
+  if (params.memo) { const m = $(`mark[data-scrap="${params.memo}"]`); if (m) { setTimeout(() => { m.scrollIntoView({ block: 'center' }); m.classList.add('flash'); setTimeout(() => NOTE.lastY = window.scrollY, 50); }, 60); } }
+  // 라이브러리 기록
+  if (!S.readAt[NOTE.id]) { const d = new Date(); S.readAt[NOTE.id] = `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`; S.progress[NOTE.id] = S.progress[NOTE.id] || 0; S.libExtra.unshift({ noteId: NOTE.id, readAt: S.readAt[NOTE.id] }); save(); }
+  updateProgress();
+}
+function updateProgress() {
+  const art = $('#article'); if (!art || NOTE.id == null) return;
+  const top = art.offsetTop, h = art.offsetHeight;
+  const seen = window.scrollY + window.innerHeight - top; const pct = Math.max(0, Math.min(100, Math.round(seen / h * 100)));
+  $('#prog').style.width = pct + '%';
+  if (pct > (S.progress[NOTE.id] || 0)) { S.progress[NOTE.id] = pct; save(); }
+}
+function onNoteScroll() {
+  const bar = $('#notebar'); if (!bar) return;
+  const y = window.scrollY, d = y - NOTE.lastY; NOTE.lastY = y;
+  if (y <= 10) { NOTE.acc = 0; setUp(true); }
+  else { if ((d > 0) !== (NOTE.acc > 0)) NOTE.acc = 0; NOTE.acc += d; if (NOTE.acc <= -30) setUp(true); else if (NOTE.acc >= 30) setUp(false); }
+  updateProgress(); hideSelPop();
+  function setUp(v) { if (v === NOTE.up) return; NOTE.up = v; bar.classList.toggle('up', v); }
+}
+/* 문장 선택 → 팝업 */
+let selRange = null;
+function onSelection() {
+  const sel = window.getSelection(); const art = $('#article'); const pop = $('#selpop'); if (!art || !pop) return;
+  if (!sel || sel.isCollapsed || !sel.rangeCount) { hideSelPop(); return; }
+  const r = sel.getRangeAt(0); if (!art.contains(r.commonAncestorContainer)) { hideSelPop(); return; }
+  const txt = sel.toString().trim(); if (txt.length < 2) { hideSelPop(); return; }
+  selRange = r.cloneRange();
+  const rect = r.getBoundingClientRect(); const app = $('.app').getBoundingClientRect();
+  pop.classList.remove('hidden');
+  const w = pop.offsetWidth; let left = rect.right - app.left - w; left = Math.max(8, Math.min(left, app.width - w - 8));
+  pop.style.left = left + 'px'; pop.style.top = (rect.bottom - app.top + 8) + 'px';
+}
+function hideSelPop() { const p = $('#selpop'); if (p) p.classList.add('hidden'); }
+function addScrap(noteId, quote, memo = '') {
+  const id = 'U' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  S.scraps.unshift({ id, noteId, quote, ts: new Date().toISOString().slice(0, 19), skin: 'gray', memo }); save(); return id;
+}
+function scrapFromSelection(memo) {
+  if (!selRange) return;
+  const quote = selRange.toString().trim();
+  const id = addScrap(NOTE.id, quote, memo);
+  try { const m = document.createElement('mark'); m.dataset.scrap = id; m.dataset.act = 'mark'; selRange.surroundContents(m); }
+  catch (e) { /* 여러 문단에 걸친 선택: 본문 재렌더 없이 그대로 둔다 */ }
+  window.getSelection().removeAllRanges(); hideSelPop(); toast(memo ? '메모와 함께 문장스크랩에 저장했어요' : '문장스크랩에 저장했어요');
+}
+function memoModal(scrapId, onSaved) {
+  const s = S.scraps.find(x => x.id === scrapId); const cur = s ? s.memo : '';
+  modal(`<h4>메모를 남겨보세요</h4><button class="x" data-act="modal-close">${I.x}</button><div class="ta"><textarea id="memoTa" maxlength="200" placeholder="메모를 남겨보세요.">${esc(cur)}</textarea><div class="n"><b id="memoN">${cur.length}</b>/200</div></div><button class="primary" id="memoSave" ${cur ? '' : 'disabled'}>저장하기</button>`,
+    { onOpen: m => { const ta = $('#memoTa', m), btn = $('#memoSave', m); ta.oninput = () => { $('#memoN', m).textContent = ta.value.length; btn.disabled = !ta.value.trim(); }; btn.onclick = () => { const v = ta.value.trim(); closeModal(); onSaved(v); }; setTimeout(() => ta.focus(), 50); } });
+}
+function markPopup(mark) {
+  const id = mark.dataset.scrap; const s = S.scraps.find(x => x.id === id); if (!s) return;
+  modal(`<h4>문장스크랩</h4><button class="x" data-act="modal-close">${I.x}</button><p class="quote" style="font-size:15px;line-height:26px">${esc(s.quote)}</p>${s.memo ? `<p class="src">메모: ${esc(s.memo)}</p>` : ''}<div class="btns"><button id="mkMemo">${s.memo ? '메모 수정' : '메모 남기기'}</button><button id="mkGo">스크랩 목록</button><button class="danger" id="mkDel">삭제</button></div>`,
+    { onOpen: m => { $('#mkMemo', m).onclick = () => { closeModal(); memoModal(id, v => { s.memo = v; save(); toast('메모를 저장했어요'); }); }; $('#mkGo', m).onclick = () => { closeModal(); nav('#/scrap'); }; $('#mkDel', m).onclick = () => { closeModal(); confirmModal('스크랩을 삭제할까요?', '삭제한 문장스크랩은 복구할 수 없습니다.', '삭제', () => { deleteScrap(id); const mk = $(`mark[data-scrap="${id}"]`); if (mk) mk.replaceWith(...mk.childNodes); toast('삭제했어요'); }); }; } });
+}
+function deleteScrap(id) { const i = S.scraps.findIndex(x => x.id === id); if (i >= 0) S.scraps.splice(i, 1); save(); }
+function settingsModal() {
+  modal(`<h4>글자 크기</h4><button class="x" data-act="modal-close">${I.x}</button><div class="opts">${[15, 16, 18, 20, 22].map(f => `<button class="${S.fs === f ? 'on' : ''}" data-fs="${f}"><span style="font-size:${f}px">가나다 ABC</span><span style="font-size:12px;color:#999">${f}px</span></button>`).join('')}</div>`,
+    { onOpen: m => $$('[data-fs]', m).forEach(b => b.onclick = () => { S.fs = +b.dataset.fs; save(); $('.note').style.setProperty('--fs', S.fs + 'px'); closeModal(); }) });
+}
+function togglePlay() {
+  NOTE.playing = !NOTE.playing; clearInterval(NOTE.pt);
+  $('#plBtn')?.classList.toggle('on', NOTE.playing); $('#tbPlay')?.classList.toggle('on', NOTE.playing);
+  if (NOTE.playing) NOTE.pt = setInterval(() => { if (NOTE.remain > 0) NOTE.remain--; const el = $('#du'); if (el) el.textContent = `${pad(Math.floor(NOTE.remain / 60))}:${pad(NOTE.remain % 60)}`; }, 1000);
+  toast(NOTE.playing ? '오디오를 재생합니다 (프로토타입)' : '일시정지');
+}
+
+/* ═══════════ 문장스크랩 ═══════════ */
+const SC = { tab: 'date', q: '', sort: '최신순', page: 1, open: false, skinFor: null };
+const WD = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+function dateKey(ts) { const d = new Date(ts); return `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}. ${WD[d.getDay()]}`; }
+function tsLabel(ts) { const d = new Date(ts); return `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}. ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function scrapCard(s) {
+  const n = NOTES.get(s.noteId) || { id: s.noteId, title: '노트', ed: 'K' };
+  const len = s.quote.length; const cls = len <= 100 ? 's' : len <= 140 ? 'm' : 'l';
+  const cap = { s: [14, 7], m: [17, 8], l: [20, 9] }[cls]; // [한 줄 글자 수(근사), 최대 줄 수]
+  const lines = s.quote.split('\n').reduce((a, ln) => a + Math.max(1, Math.ceil(ln.length / cap[0])), 0);
+  const tooLong = lines > cap[1] || len > 230; const q = tooLong ? s.quote.slice(0, Math.min(215, cap[0] * cap[1] - 6)) + '…' : s.quote;
+  const skinSolid = { gray: '#f2f2f2', orange: '#ff7c55', tan: '#e1c294', green: '#b6ffaf', blue: '#9cbbff' }[s.skin];
+  return `<div class="scard skin-${s.skin}" data-sid="${s.id}" style="${skinSolid ? `--skin:${skinSolid}` : ''}">
+    <div class="top"><div class="q ${cls}">${esc(q)}</div>${tooLong ? `<button class="full" data-act="sc-full" data-sid="${s.id}">전체 보기</button>` : ''}${s.memo ? `<div class="memo"><b>메모</b>${esc(s.memo)}</div>` : ''}</div>
+    <div class="ts">${tsLabel(s.ts)}</div>
+    <a class="src" href="#/note/${n.id}?memo=${s.id}"><div class="mini"><div class="ph" style="${L.phStyle(n)};position:absolute;inset:0"></div></div><span class="clamp2">${esc(n.title)}</span></a>
+    <div class="acts"><button data-act="sc-memo" data-sid="${s.id}" aria-label="메모">${I.memo}</button><button data-act="sc-skin" data-sid="${s.id}" aria-label="스킨 변경">${I.palette}</button><button data-act="sc-img" data-sid="${s.id}" aria-label="이미지로 저장">${I.download}</button><button class="del" data-act="sc-del" data-sid="${s.id}" aria-label="삭제">${I.trash}</button>
+      ${SC.skinFor === s.id ? `<div class="skinpop"><div>${['gray', 'orange', 'tan', 'green', 'blue'].map(k => `<button class="sk-${k} ${s.skin === k ? 'on' : ''}" data-act="sc-skin-set" data-sid="${s.id}" data-skin="${k}"></button>`).join('')}</div><div>${['gray_basic', 'yellow_basic', 'green_basic', 'blue_ice', 'pink_bubble'].map(k => `<button class="sk-${k} ${s.skin === k ? 'on' : ''}" data-act="sc-skin-set" data-sid="${s.id}" data-skin="${k}"></button>`).join('')}</div></div>` : ''}
+    </div></div>`;
+}
+function renderScrap() {
+  let items = [...S.scraps];
+  if (SC.q) { const q = SC.q.toLowerCase(); items = items.filter(s => (s.quote + ' ' + (NOTES.get(s.noteId)?.title || '') + ' ' + (s.memo || '')).toLowerCase().includes(q)); }
+  items.sort((a, b) => SC.sort === '최신순' ? b.ts.localeCompare(a.ts) : a.ts.localeCompare(b.ts));
+  const groups = []; const gi = {};
+  items.forEach(s => { const k = SC.tab === 'date' ? dateKey(s.ts) : String(s.noteId); if (!(k in gi)) { gi[k] = groups.length; groups.push({ k, label: SC.tab === 'date' ? k : (NOTES.get(s.noteId)?.title || '노트'), items: [] }); } groups[gi[k]].items.push(s); });
+  const per = 4, total = Math.max(1, Math.ceil(groups.length / per)); SC.page = Math.min(SC.page, total);
+  const pg = groups.slice((SC.page - 1) * per, SC.page * per);
+  return `${header()}<main class="scrap">
+    <h2 class="ttl">문장스크랩</h2>
+    <div class="tabs"><button class="${SC.tab === 'date' ? 'on' : ''}" data-act="sc-tab" data-tab="date">날짜별</button><button class="${SC.tab === 'note' ? 'on' : ''}" data-act="sc-tab" data-tab="note">노트별</button></div>
+    <div class="sbox">${I.search}<input id="scQ" placeholder="노트, 문장, 메모를 검색해 보세요." value="${esc(SC.q)}"></div>
+    <div class="sort"><button class="sortbtn" data-act="sc-sort">${SC.sort} ${SC.open ? I.chevu : I.chevd}${SC.open ? `<div class="dd">${['최신순', '과거순'].map(s => `<button class="${SC.sort === s ? 'on' : ''}" data-act="sc-sort-set" data-sort="${s}">${s}</button>`).join('')}</div>` : ''}</button></div>
+    ${pg.length ? pg.map(g => `<section class="grp"><h3 class="${SC.tab === 'note' ? 'clamp2' : ''}">${esc(g.label)}</h3><div class="cards">${g.items.map(scrapCard).join('')}</div></section>`).join('') : `<div class="empty">${SC.q ? '검색 결과가 없습니다.' : '아직 스크랩한 문장이 없습니다.<br>노트를 읽다가 문장을 길게 눌러 보세요.'}</div>`}
+    ${pager(SC.page, total, 'sc-page')}
+  </main>${footer()}`;
+}
+function saveCardImage(s) {
+  const n = NOTES.get(s.noteId); const W = 600, H = 884; const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  const bg = { gray: '#f2f2f2', orange: '#ff7c55', tan: '#e1c294', green: '#b6ffaf', blue: '#9cbbff', gray_basic: '#e9e9e9', yellow_basic: '#ffd166', green_basic: '#2eb872', blue_ice: '#5aa9ff', pink_bubble: '#ff8ad9' }[s.skin] || '#f2f2f2';
+  x.fillStyle = bg; x.fillRect(0, 0, W, H); x.fillStyle = s.skin === 'green_basic' ? '#fff' : '#191919';
+  const fs = s.quote.length <= 60 ? 44 : s.quote.length <= 120 ? 36 : 30; x.font = `600 ${fs}px Pretendard, sans-serif`; x.textBaseline = 'top';
+  const lines = []; let line = ''; for (const ch of s.quote) { const t = line + ch; if (x.measureText(t).width > W - 80) { lines.push(line); line = ch; } else line = t; } lines.push(line);
+  lines.slice(0, 14).forEach((l, i) => x.fillText(l, 40, 40 + i * fs * 1.6));
+  x.font = '20px Pretendard, sans-serif'; x.fillText(tsLabel(s.ts), 40, H - 150);
+  x.font = '600 24px Pretendard, sans-serif'; x.fillText((n ? n.title : '').slice(0, 24), 40, H - 110);
+  x.font = '500 22px Georgia, serif'; x.fillText('LongBlack', 40, H - 60);
+  const a = document.createElement('a'); a.download = `longblack_scrap_${s.id}.png`; a.href = c.toDataURL('image/png'); a.click(); toast('이미지를 저장했어요');
+}
+
+/* ═══════════ 마이페이지 ═══════════ */
+const MY = { tab: 'library', sub: 'notes', filter: 'all', bmFilter: 'all', page: 1, stampTab: 'un' };
+function libraryItems() {
+  const extra = S.libExtra.filter(e => !D.library.some(l => l.noteId === e.noteId)).map(e => ({ noteId: e.noteId, readAt: e.readAt }));
+  return [...extra, ...D.library].map(l => ({ noteId: l.noteId, readAt: S.readAt[l.noteId] || l.readAt, pct: S.progress[l.noteId] ?? l.pct, n: NOTES.get(l.noteId) })).filter(x => x.n);
+}
+function renderMy() {
+  const T = D.totals; let body = '';
+  if (MY.tab === 'library') {
+    const subs = [['notes', '내 노트'], ['coffee', '내 커피챗'], ['stamp', '스탬프'], ['sticker', '스티커'], ['bookmark', '북마크']];
+    let inner = '';
+    if (MY.sub === 'notes') {
+      let items = libraryItems();
+      if (MY.filter === 'unfinished') items = items.filter(x => x.pct < 100);
+      if (MY.filter === 'bookmarked') items = items.filter(x => isBookmarked(x.noteId));
+      const per = 6, total = Math.max(1, Math.ceil(items.length / per)); MY.page = Math.min(MY.page, total);
+      const pg = items.slice((MY.page - 1) * per, MY.page * per);
+      const countTotal = MY.filter === 'all' ? T.read + S.libExtra.length : MY.filter === 'unfinished' ? T.unfinished : T.bookmarkedRead;
+      inner = `<div class="filt2">${[['all', '전체'], ['unfinished', '다 읽지 못한 노트'], ['bookmarked', '북마크한 노트']].map(([k, l], i) => `${i ? '<i>|</i>' : ''}<button class="${MY.filter === k ? 'on' : ''}" data-act="my-filter" data-f="${k}">${l}</button>`).join('')}</div>
+        <div class="cnt2"><p>총 <b>${fmtNum(countTotal)}</b>개</p><button class="sortbtn">열람일 최신순 ${I.chevd}</button></div>
+        ${pg.map(x => `<div class="lit"><p class="dt">${esc(x.readAt)}. 읽음</p><a class="g" href="#/note/${x.noteId}">${thumb(x.n, { label: true })}<div class="t"><h3 class="clamp3">${esc(x.n.title)}</h3><div class="by">${edTag(x.n)}<i>|</i><span class="clamp2" style="-webkit-line-clamp:1">${esc(x.n.author)}</span></div></div><div class="pr"><div class="bar"><i style="width:${x.pct}%"></i></div><span>${x.pct}%</span></div></a></div>`).join('') || '<div class="empty">노트가 없습니다.</div>'}
+        ${pager(MY.page, total, 'my-page')}`;
+    } else if (MY.sub === 'bookmark') {
+      let items = S.bookmarks.map(b => ({ ...b, n: NOTES.get(b.noteId), pct: S.progress[b.noteId] ?? 0, read: S.readAt[b.noteId] != null })).filter(x => x.n);
+      if (MY.bmFilter === 'read') items = items.filter(x => x.read); if (MY.bmFilter === 'unread') items = items.filter(x => !x.read);
+      const per = 6, total = Math.max(1, Math.ceil(items.length / per)); MY.page = Math.min(MY.page, total); const pg = items.slice((MY.page - 1) * per, MY.page * per);
+      const delta = S.bookmarks.length - D.bookmarks.length;
+      inner = `<div class="filt2">${[['all', '전체'], ['read', '읽은 노트'], ['unread', '읽지 못한 노트']].map(([k, l], i) => `${i ? '<i>|</i>' : ''}<button class="${MY.bmFilter === k ? 'on' : ''}" data-act="my-bmfilter" data-f="${k}">${l}</button>`).join('')}</div>
+        <div class="cnt2"><p>총 <b>${fmtNum((MY.bmFilter === 'all' ? T.bookmarks : MY.bmFilter === 'read' ? T.bookmarkedRead : T.bookmarks - T.bookmarkedRead) + delta)}</b>개</p><button class="sortbtn">북마크 최신순 ${I.chevd}</button></div>
+        ${pg.map(x => `<div class="lit bmrow"><a class="g" href="#/note/${x.noteId}">${thumb(x.n)}<div class="t"><p class="dt" style="margin-top:0">${esc(x.bmAt)} 북마크</p><h3 class="clamp3" style="margin-top:6px">${esc(x.n.title)}</h3></div></a></div>`).join('') || '<div class="empty">북마크한 노트가 없습니다.</div>'}
+        ${pager(MY.page, total, 'my-page')}`;
+    } else if (MY.sub === 'stamp') {
+      inner = `<div class="filt2">${[['un', '미교환'], ['done', '교환완료']].map(([k, l], i) => `${i ? '<i>|</i>' : ''}<button class="${MY.stampTab === k ? 'on' : ''}" data-act="my-stamp" data-f="${k}">${l}</button>`).join('')}</div>
+        <div class="panel"><h4>진행 중인 스탬프카드</h4><div class="stampcard"><div style="display:flex;justify-content:space-between;align-items:center"><b>카드${T.stampCard}</b><span style="font-size:13px;color:#666">${T.stampCount}/10</span></div><p style="margin-top:6px;font-size:13px;color:#666">스탬프 10개를 다 채우면 샷 1개를 증정합니다!</p><div class="dots">${Array.from({ length: 10 }, (_, i) => `<i class="${i < T.stampCount ? 'on' : ''}">${i + 1}</i>`).join('')}</div></div>
+        <h4 style="margin-top:28px">${MY.stampTab === 'un' ? `미교환 스탬프카드 <span style="font-weight:400;color:#666;font-size:13px">총 개수: ${T.unexchanged}개</span>` : '교환완료 스탬프카드'}</h4>
+        ${MY.stampTab === 'un' ? [61, 60, 59, 58, 57].map(c => `<div class="stamp-row"><span>카드${c}</span><button data-act="toast" data-msg="샷 1개로 교환했어요 (프로토타입)">교환하기</button></div>`).join('') : [56, 55, 54].map(c => `<div class="stamp-row"><span>카드${c}</span><span style="font-size:13px;color:#999">교환완료</span></div>`).join('')}
+        <p style="margin-top:20px;font-size:12px;line-height:20px;color:#999">노트당 스탬프 획득은 최초 1회만 가능합니다.<br>샷으로 교환 후 14일 이내(교환일 기준)에 사용하셔야 합니다.<br>증정으로 받은 샷은 환불 받을 수 없습니다.<br>샷은 멤버십을 유지하고 있어야 사용이 가능합니다.</p></div>`;
+    } else if (MY.sub === 'coffee') {
+      const mine = Object.entries(S.comments).flatMap(([id, arr]) => arr.map(c => ({ id: +id, ...c })));
+      inner = `<div class="panel"><h4>내가 남긴 의견 <span style="color:#ff5126">${mine.length}</span></h4>${mine.length ? mine.map(c => `<div class="kv" style="flex-direction:column;gap:6px;align-items:flex-start"><span>${esc(NOTES.get(c.id)?.title || '')}</span><div>${esc(c.txt)}</div></div>`).join('') : '<div class="empty">아직 남긴 의견이 없습니다.<br>노트 아래 커피챗에서 의견을 남겨보세요.</div>'}</div>`;
+    } else {
+      inner = `<div class="panel"><h4>스티커</h4><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">${['🏃', '📚', '☕', '🎯', '🌙', '✍️', '🔥', '🧭'].map((e, i) => `<div style="aspect-ratio:1;border-radius:12px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:28px;${i > 4 ? 'opacity:.3' : ''}">${e}</div>`).join('')}</div><p style="margin-top:12px;font-size:12px;color:#999">노트를 읽고 커피챗에 참여하면 스티커를 모을 수 있어요. (프로토타입 표시)</p></div>`;
+    }
+    body = `<div class="sub">${subs.map(([k, l]) => `<button class="${MY.sub === k ? 'on' : ''}" data-act="my-sub" data-sub="${k}">${l}</button>`).join('')}</div><div class="box">${inner}</div>`;
+  } else if (MY.tab === 'membership') {
+    body = `<div class="box" style="border-top:.5px solid #d4d4d5;margin-top:16px;border-radius:4px"><div class="panel"><h4>현재 플랜</h4><div class="kv"><span>플랜</span><b>${esc(D.user.plan)}</b></div><div class="kv"><span>이용 기간</span><b>${T.memberDays}일째</b></div><div class="kv"><span>다음 결제일</span><b>2026.11.28</b></div><div class="kv"><span>보유 샷</span><b>${T.shots}개</b></div><button class="morebtn" data-act="toast" data-msg="플랜 변경 (프로토타입)">플랜 변경하기</button></div></div>`;
+  } else if (MY.tab === 'profile') {
+    body = `<div class="box" style="border-top:.5px solid #d4d4d5;margin-top:16px;border-radius:4px"><div class="panel"><h4>회원정보</h4><div class="kv"><span>이름</span><b>${esc(D.user.name)}</b></div><div class="kv"><span>이메일</span><b>${esc(D.user.email)}</b></div><div class="kv"><span>관심사</span><b>미설정</b></div><div class="kv"><span>알림</span><b>${S.bell ? '켜짐' : '꺼짐'}</b></div><button class="morebtn" data-act="toast" data-msg="회원정보 수정 (프로토타입)">정보 수정</button></div></div>`;
+  } else {
+    body = `<div class="box" style="border-top:.5px solid #d4d4d5;margin-top:16px;border-radius:4px"><div class="panel"><h4>결제 수단</h4><div class="kv"><span>카드</span><b>•••• 4321</b></div><h4 style="margin-top:24px">쿠폰</h4><div class="empty" style="padding:30px 0">사용 가능한 쿠폰이 없습니다.</div></div></div>`;
+  }
+  return `${header({ color: true })}<main class="my">
+    <h2 class="ttl">마이페이지</h2>
+    <div class="prof"><div class="hi">안녕하세요! <b>${esc(D.user.name)}님</b><a href="#/profile">${I.edit}</a></div><div class="em">${esc(D.user.email)}</div><span class="plan">${esc(D.user.plan)}</span><a class="mem" href="#/membership"><span>멤버십 ${T.memberDays} 일째 이용 중</span>${I.chev}</a><a class="lo" href="#/logout">로그아웃 ${I.logout}</a></div>
+    <div class="stats"><a href="#/shot"><span>롱블랙 샷</span><b>${T.shots}개</b></a><a href="#/history"><span>읽은 노트</span><b>${fmtNum(T.read + S.libExtra.length)}개</b></a></div>
+    <div class="tabs">${[['library', '라이브러리'], ['membership', '멤버십'], ['profile', '회원정보'], ['pay', '결제 및 쿠폰']].map(([k, l]) => `<button class="${MY.tab === k ? 'on' : ''}" data-act="my-tab" data-tab="${k}">${l}</button>`).join('')}</div>
+    ${body}
+  </main>${footer()}`;
+}
+
+/* ═══════════ 검색 ═══════════ */
+function searchNotes(q) {
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean); if (!toks.length) return [];
+  const score = n => { const t = (n.title + ' ' + n.author + ' ' + (n.kw || []).join(' ') + ' ' + (n.tags || []).join(' ') + ' ' + (n.summary || '') + ' ' + (n.series || '')).toLowerCase(); let s = 0; toks.forEach(k => { if (n.title.toLowerCase().includes(k)) s += 3; if ((n.kw || []).some(x => x.toLowerCase().includes(k))) s += 2; if (t.includes(k)) s += 1; }); return s; };
+  return D.notes.filter(n => !n.upcoming).map(n => [n, score(n)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1] || b.id - a.id).map(x => x[0]);
+}
+function renderSearch(params) {
+  const q = (params.q || '').trim();
+  if (!q) return `<div class="srch"><div class="land"><div class="lgw"><span class="logo">LongBlack</span><span>검색</span></div>
+    <div class="sin">${I.search}<input id="srchQ" placeholder="읽기에 대한 노트 추천해줘"></div>
+    <p class="sug">이렇게 검색해 보세요.</p>
+    <div class="sg"><a href="#/search?q=인기" style="background:#ff5126">지난 달 인기 많았던 노트가 궁금해</a><a href="#/search?q=AI" style="background:#d3b18d">AI와 함께 일하는 사람들</a><a href="#/search?q=디자인 트렌드" style="background:#626bff">디자인 트렌드가 보이는 노트</a><a href="#/search?q=마케팅" style="background:#c8c8c8">참고하기 좋은 마케팅 레퍼런스</a></div></div></div>`;
+  const res = searchNotes(q);
+  return `<div class="srch"><div class="res-h"><a href="#/search" style="display:flex;align-items:center;gap:8px"><span class="logo">LongBlack</span><span>검색</span></a></div>
+    <div class="res-f"><div class="sin" style="margin-top:0">${I.search}<input id="srchQ" value="${esc(q)}"><button class="clr" data-act="srch-clear">${I.x}</button></div></div>
+    <div class="res">${res.length ? res.slice(0, 20).map(n => `<div class="ri"><a class="top" href="#/note/${n.id}">${thumb(n, { bm: false })}<h3>${esc(n.title)}</h3></a><div class="sum">${esc(n.summary || `${n.title.split(' : ')[0]}에 관한 노트예요. ${n.sub || n.title.split(' : ').slice(1).join(' ') || ''} 핵심 내용을 요약한 문장이 이 자리에 들어갑니다.`)}</div><div class="tags">${(n.tags || n.kw || []).map(t => `<a href="#/search?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join('')}</div></div>`).join('') : `<div class="none">‘${esc(q)}’에 맞는 노트를 찾지 못했어요.<br>다른 키워드로 검색해 보세요.</div>`}</div></div>`;
+}
+
+/* ═══════════ 기타 페이지 ═══════════ */
+const SEL = { tab: '진행 중', cat: '' };
+const SELS = [['3월 1일까지 교환 가능', ['Art', 'Vibe'], '브래드 월스 사진전', '관람 티켓 40% 할인', 1, 'OFFLINE'], ['3월 1일까지 교환 가능', ['Art', 'Vibe'], '표기식 사진전', '관람 티켓 40% 할인', 1, 'OFFLINE'], ['12월 1일까지 교환 가능', ['Taste', 'Space'], '밴루엔', '스쿱 / 샘플러 20% 할인', 1, 'OFFLINE'], ['', ['Taste', 'Space'], '커피스니퍼', '블랙커피 1잔 무료 + 3종 음료 20% 할인', 2, 'OFFLINE'], ['', ['Object'], '커피스니퍼 온라인스토어', '총 주문 금액 20% 할인', 1, 'ONLINE'], ['', ['Vibe', 'Space'], '성수율 뮤직', '입장권+드링크 30% 할인', 1, 'OFFLINE'], ['', ['Taste', 'Object'], '보난자커피 온라인스토어', '총 주문 금액 15% 할인', 1, 'ONLINE'], ['', ['Taste', 'Space'], '보난자커피 군자', '군자점 아메리카노 1잔 무료', 2, 'OFFLINE'], ['', ['Taste', 'Space'], '프릳츠 장충', '총 주문 금액 20% 할인', 1, 'OFFLINE']];
+function renderSelection() {
+  const items = SELS.filter(s => !SEL.cat || s[1].includes(SEL.cat));
+  return `${header()}<main class="page"><h1>롱블랙 셀렉션</h1><div class="shots"><p>${esc(D.user.name)}님이 보유한 샷 개수</p><b>${D.totals.shots}개</b></div>
+    <p class="lead">‘롱블랙 셀렉션’은 롱블랙이 고심해 고른 감각적 브랜드를 통해, 글 속 영감을 일상에서 체험하도록 도와줍니다. 롱블랙 구독자만 누릴 수 있는 특별한 경험입니다. 라인업은 계속 추가될 예정입니다.</p>
+    <div class="stabs">${['진행 중', '종료'].map(t => `<button class="${SEL.tab === t ? 'on' : ''}" data-act="sel-tab" data-t="${t}">${t}</button>`).join('')}</div>
+    <div class="cats">${['', 'Taste', 'Object', 'Space', 'Art', 'Vibe'].map(c => `<button class="${SEL.cat === c ? 'on' : ''}" data-act="sel-cat" data-c="${c}">${c || '전체'}</button>`).join('')}</div>
+    ${SEL.tab === '종료' ? '<div class="empty">종료된 셀렉션이 없습니다.</div>' : items.map((s, i) => `<div class="selc">${s[0] ? `<p class="due">${s[0]}</p>` : ''}<div class="thumb"><div class="ph" style="--ph:hsl(${(i * 47) % 360} 24% 58%)"><i></i></div></div><p class="cat">${s[1].join(' · ')}</p><h3>${s[2]}</h3><p>${s[3]}</p><div class="meta"><b>샷 ${s[4]}개</b><i>${s[5]}</i></div><button class="more" data-act="toast" data-msg="${esc(s[2])} 자세히 보기 (프로토타입)">자세히 보기</button></div>`).join('')}
+  </main>${footer()}`;
+}
+function renderPlay() {
+  const t = D.notes.find(n => n.today);
+  return `${header()}<main class="page play"><h1>Play — 롱블랙 게임</h1><p class="lead">문장이 놀이가 되는 곳, 롱블랙 플레이</p>
+    <div class="hero2"><p>오늘의 게임 노트</p><h3>${esc(t.title)}</h3></div>
+    ${[['⌨️', '타자 게임', '노트 속 문장을 빠르고 정확하게 맞혀보세요.'], ['ㅊㅅ', '오늘의 초성', '초성만 보고 노트 속 단어를 맞혀보세요.'], ['🔮', '문장 운세', '문장 속에 숨겨진 오늘의 운세를 확인해보세요.']].map(g => `<button class="gm" style="width:100%;text-align:left" data-act="toast" data-msg="${g[1]} (프로토타입)"><div class="ic">${g[0]}</div><div><h4>${g[1]}</h4><p>${g[2]}</p></div></button>`).join('')}
+    <div class="live"><b>LIVE</b> 142 · 박*주 님이 샷 3개를 받았어요</div></main>${footer()}`;
+}
+function renderSimple(title, rows) { return `${header()}<main class="page faq"><h1>${esc(title)}</h1>${rows.map(r => `<div class="q">${esc(r[0])}</div>${r[1] ? `<div class="a">${esc(r[1])}</div>` : ''}`).join('')}</main>${footer()}`; }
+
+/* ═══════════ 라우터 · 이벤트 ═══════════ */
+function render() {
+  const { path, params } = parseHash(); const app = $('#app'); let html = ''; let after = null;
+  window.getSelection()?.removeAllRanges?.();
+  const m = path.match(/^\/note\/(\d+)$/);
+  if (path === '/' ) html = L.renderHome();
+  else if (m) { html = renderNote(+m[1], params); after = () => noteAfterRender(params); }
+  else if (path === '/note') html = L.renderNoteList();
+  else if (path === '/scrap') html = renderScrap();
+  else if (['/history', '/bookmark', '/stamp', '/coffeechat', '/badge', '/membership', '/profile', '/paymethod'].includes(path)) html = renderMy();
+  else if (path === '/search') html = renderSearch(params);
+  else if (path === '/selection') html = renderSelection();
+  else if (path === '/play') html = renderPlay();
+  else if (path === '/shot') html = renderSimple('샷추가', [['보유한 샷 11개', '샷 1개로 지난 노트 1편을 열람할 수 있어요.'], ['샷 3개 — 4,900원', ''], ['샷 10개 — 14,900원', ''], ['샷 30개 — 39,000원', '']]);
+  else if (path === '/gift') html = renderSimple('선물하기', [['롱블랙 멤버십 선물하기', '친구에게 1개월·3개월·12개월 멤버십을 선물할 수 있어요.'], ['샷 선물하기', '보유한 샷을 친구에게 보낼 수 있어요.']]);
+  else if (path === '/faq') html = renderSimple('고객센터', [['24시간 열람이란 무엇인가요?', '오늘의 노트는 발행 당일 자정까지 읽을 수 있어요. 오늘 안에 읽은 노트는 라이브러리에 저장됩니다.'], ['지난 노트는 어떻게 읽나요?', '샷 1개를 사용해 지난 노트를 열람할 수 있어요. 라이브러리에 저장된 노트는 다시 읽을 수 있습니다.'], ['문장스크랩은 어떻게 하나요?', '노트를 읽다가 문장을 길게 눌러 선택하면 ‘문장스크랩’ 버튼이 나타납니다.'], ['1:1 문의', '문의를 남겨주시면 영업일 기준 2일 이내 답변드립니다.']]);
+  else if (path === '/article') html = renderSimple('공지사항', [['[안내] 롱블랙 5주년 기념 카페 운영', '성수동 프로젝트렌트에서 11월 20일까지 운영합니다.'], ['[업데이트] 문장스크랩 스킨 기능 추가', '스크랩 카드의 배경을 10가지 스킨으로 바꿀 수 있어요.'], ['[안내] 오디오 노트 BETA 오픈', '노트를 음성으로 들을 수 있는 기능을 시험 운영합니다.']]);
+  else if (path === '/about') html = renderSimple('왜 롱블랙을 읽어야할까요?', [['하루 한 편, 새로운 시대의 책', '롱블랙은 스마트폰에서 읽기 딱 좋은 길이의 깊이 있는 글을 매일 하나씩 발행합니다.'], ['24시간 구독 시스템', '오늘 발행된 글은 꼭 오늘 읽게끔 설계했어요. 읽은 노트는 라이브러리에 쌓입니다.'], ['1800편이 넘는 노트', '브랜드, 비즈니스, 문화, 기술, 사람의 이야기를 탐험하듯 읽어보세요.']]);
+  else if (path === '/biz') html = renderSimple('롱블랙 Team Pass (B2B)', [['팀 전체가 함께 읽는 롱블랙', '구성원 수에 맞춘 팀 패스를 안내해 드립니다.'], ['도입 문의', '회사명과 인원을 남겨주시면 담당자가 연락드립니다.']]);
+  else if (path === '/logout') { html = renderSimple('로그아웃', [['프로토타입에서는 로그아웃이 동작하지 않습니다.', '홈으로 돌아가려면 상단 로고를 누르세요.']]); }
+  else html = renderSimple('페이지를 찾을 수 없습니다', [[path, '']]);
+  app.innerHTML = html;
+  const keepScroll = !!params.memo; if (!keepScroll) window.scrollTo(0, 0);
+  if (after) after();
+  bindInputs(path);
+}
+function bindInputs(path) {
+  const lq = $('#listQ'); if (lq) lq.onkeydown = e => { if (e.key === 'Enter') { L.LIST.q = lq.value.trim(); L.LIST.page = 1; render(); } };
+  const sq = $('#scQ'); if (sq) { sq.oninput = () => { SC.q = sq.value.trim(); SC.page = 1; const pos = sq.selectionStart; render(); const n = $('#scQ'); n.focus(); n.setSelectionRange(pos, pos); }; }
+  const srq = $('#srchQ'); if (srq) { srq.onkeydown = e => { if (e.key === 'Enter' && srq.value.trim()) nav('#/search?q=' + encodeURIComponent(srq.value.trim())); }; if (!parseHash().params.q) setTimeout(() => srq.focus(), 50); }
+  const ta = $('#cmtTa'); if (ta) ta.oninput = () => $('#cmtN').textContent = ta.value.length;
+  const sl = $('#slider'); if (sl) sl.onscroll = () => { const i = Math.round(sl.scrollLeft / sl.clientWidth); $('#sliderPg').textContent = i + 1; $$('.slider .bar b').forEach((b, k) => b.classList.toggle('on', k === i)); };
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const act = t.dataset.act; const sid = t.dataset.sid;
+  if (t.tagName === 'A' || t.closest('a')) { if (['bm', 'tip-close', 'share', 'sel-scrap', 'sel-memo', 'mark'].includes(act)) e.preventDefault(); }
+  switch (act) {
+    case 'drawer': L.openDrawer(); break;
+    case 'drawer-close': L.closeDrawer(); break;
+    case 'toast': toast(t.dataset.msg || ''); break;
+    case 'tip-close': e.stopPropagation(); if (t.dataset.tip === 'reco') { $('#recoPop')?.classList.remove('show'); break; } S.tips[t.dataset.tip] = 1; save(); (t.closest('.tip') || t.closest('.pop') || t)?.remove(); break;
+    case 'reco-tip': $('#recoPop')?.classList.toggle('show'); break;
+    case 'bm': e.stopPropagation(); toggleBookmark(+t.dataset.bm); break;
+    case 'share': navigator.clipboard?.writeText(location.href.replace(/\?.*$/, '')).then(() => toast('24시간 무료 링크를 복사했어요'), () => toast('공유 (프로토타입)')) || toast('공유 (프로토타입)'); break;
+    case 'play': togglePlay(); break;
+    case 'bell': S.bell = !S.bell; save(); t.classList.toggle('on', S.bell); toast(S.bell ? '새 노트 알림을 켰어요' : '알림을 껐어요'); break;
+    case 'scroll-to': $(t.dataset.to)?.scrollIntoView({ behavior: 'smooth' }); break;
+    case 'settings': settingsModal(); break;
+    case 'rate': S.ratings[NOTE.id] = +t.dataset.v; save(); $$('.stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= +t.dataset.v)); toast(`평점 ${t.dataset.v}점을 남겼어요`); break;
+    case 'cmt-add': { const ta = $('#cmtTa'); const v = ta.value.trim(); if (!v) { toast('의견을 입력해 주세요'); break; } (S.comments[NOTE.id] = S.comments[NOTE.id] || []).unshift({ txt: v, when: '방금', cups: 0 }); save(); ta.value = ''; $('#cmtN').textContent = 0; $('#cmts').innerHTML = commentsHTML(NOTE.id); toast('의견을 등록했어요'); break; }
+    case 'cup': S.cups[t.dataset.k] = !S.cups[t.dataset.k]; save(); $('#cmts').innerHTML = commentsHTML(NOTE.id); break;
+    case 'sel-scrap': scrapFromSelection(''); break;
+    case 'sel-memo': { const r = selRange; hideSelPop(); memoModal(null, v => { selRange = r; scrapFromSelection(v); }); break; }
+    case 'mark': markPopup(t); break;
+    case 'modal-close': closeModal(); break;
+    case 'kw': L.LIST.kw = L.LIST.kw === t.dataset.kw ? '' : t.dataset.kw; L.LIST.page = 1; render(); break;
+    case 'list-sort': L.LIST.open = !L.LIST.open; render(); break;
+    case 'list-sort-set': e.stopPropagation(); L.LIST.sort = t.dataset.sort; L.LIST.open = false; L.LIST.page = 1; render(); break;
+    case 'list-free': L.LIST.free = !L.LIST.free; L.LIST.page = 1; render(); break;
+    case 'list-view': L.LIST.view = t.dataset.view; render(); break;
+    case 'list-page': L.LIST.page = +t.dataset.page; render(); $('.cnt')?.scrollIntoView(); break;
+    case 'sc-tab': SC.tab = t.dataset.tab; SC.page = 1; render(); break;
+    case 'sc-sort': SC.open = !SC.open; render(); break;
+    case 'sc-sort-set': e.stopPropagation(); SC.sort = t.dataset.sort; SC.open = false; render(); break;
+    case 'sc-page': SC.page = +t.dataset.page; render(); break;
+    case 'sc-full': { const s = S.scraps.find(x => x.id === sid); modal(`<button class="x" data-act="modal-close">${I.x}</button><p class="quote">${esc(s.quote)}</p><p class="src">${esc(NOTES.get(s.noteId)?.title || '')}</p>`); break; }
+    case 'sc-memo': memoModal(sid, v => { const s = S.scraps.find(x => x.id === sid); s.memo = v; save(); render(); toast('메모를 저장했어요'); }); break;
+    case 'sc-skin': SC.skinFor = SC.skinFor === sid ? null : sid; { const y = window.scrollY; render(); window.scrollTo(0, y); } break;
+    case 'sc-skin-set': { const s = S.scraps.find(x => x.id === sid); s.skin = t.dataset.skin; SC.skinFor = null; save(); const y = window.scrollY; render(); window.scrollTo(0, y); break; }
+    case 'sc-img': saveCardImage(S.scraps.find(x => x.id === sid)); break;
+    case 'sc-del': confirmModal('스크랩을 삭제할까요?', '삭제한 문장스크랩은 복구할 수 없습니다.', '삭제', () => { deleteScrap(sid); const y = window.scrollY; render(); window.scrollTo(0, y); toast('삭제했어요'); }); break;
+    case 'my-tab': MY.tab = t.dataset.tab; MY.page = 1; render(); break;
+    case 'my-sub': MY.sub = t.dataset.sub; MY.page = 1; render(); break;
+    case 'my-filter': MY.filter = t.dataset.f; MY.page = 1; render(); break;
+    case 'my-bmfilter': MY.bmFilter = t.dataset.f; MY.page = 1; render(); break;
+    case 'my-stamp': MY.stampTab = t.dataset.f; render(); break;
+    case 'my-page': MY.page = +t.dataset.page; render(); $('.my .sub')?.scrollIntoView(); break;
+    case 'srch-clear': nav('#/search'); break;
+    case 'sel-tab': SEL.tab = t.dataset.t; render(); break;
+    case 'sel-cat': SEL.cat = t.dataset.c; render(); break;
+  }
+});
+document.addEventListener('click', e => { // 열린 드롭다운/스킨 팝오버 바깥 클릭 시 닫기
+  if (L.LIST.open && !e.target.closest('[data-act="list-sort"]')) { L.LIST.open = false; render(); }
+  if (SC.open && !e.target.closest('[data-act="sc-sort"]')) { SC.open = false; render(); }
+  if (SC.skinFor && !e.target.closest('.skinpop') && !e.target.closest('[data-act="sc-skin"]')) { SC.skinFor = null; const y = window.scrollY; render(); window.scrollTo(0, y); }
+}, true);
+document.addEventListener('selectionchange', () => { clearTimeout(window.__selT); window.__selT = setTimeout(onSelection, 180); });
+document.addEventListener('mouseup', () => setTimeout(onSelection, 10));
+document.addEventListener('touchend', () => setTimeout(onSelection, 250));
+window.addEventListener('scroll', () => { if (NOTE.id != null && $('#notebar')) onNoteScroll(); }, { passive: true });
+function routeInit() { // 해시가 바뀔 때만 화면 상태를 초기화 (탭 클릭 등 내부 재렌더에는 영향 없음)
+  const { path } = parseHash();
+  const subs = { '/history': 'notes', '/bookmark': 'bookmark', '/stamp': 'stamp', '/coffeechat': 'coffee', '/badge': 'sticker' };
+  const tabs = { '/membership': 'membership', '/profile': 'profile', '/paymethod': 'pay' };
+  if (subs[path]) { MY.tab = 'library'; MY.sub = subs[path]; MY.page = 1; }
+  if (tabs[path]) { MY.tab = tabs[path]; MY.page = 1; }
+  if (path === '/scrap') { SC.page = 1; SC.open = false; SC.skinFor = null; }
+  if (path === '/note') { L.LIST.open = false; }
+}
+window.addEventListener('hashchange', () => { L.closeDrawer(); closeModal(); NOTE.id = null; clearInterval(NOTE.pt); routeInit(); render(); });
+document.body.insertAdjacentHTML('beforeend', L.drawerHTML() + '<div class="modal" id="modal"></div><div class="toast" id="toast"></div><div class="proto-badge">V0 재현 · 프로토타입</div>');
+routeInit(); render();
+})();
+
+</script>
+</body>
+</html>
