@@ -4,9 +4,17 @@
   "slug_name": "",
   "purpose": "(미정) 이 버전으로 무엇을 검증하나",
   "log": [
-    {"date": "2026-11-22", "what": "BASE(V0 재현본)를 그대로 복제해 시작. 고유 수정 없음"}
+    {
+      "date": "2026-11-22",
+      "what": "BASE(V0 재현본)를 그대로 복제해 시작. 고유 수정 없음"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "사용자가 새 원본(휴대폰 프레임 + UT 행동 트래커가 붙은 버전)을 주며 V1·V2에 적용 요청 → V1·V2의 기준본을 base/longblack_tracker.html 로 교체. V3~V5는 기존 BASE 유지"
+    }
   ],
   "edits": [],
   "css": "",
-  "js": ""
+  "js": "",
+  "base_file": "base/longblack_tracker.html"
 }

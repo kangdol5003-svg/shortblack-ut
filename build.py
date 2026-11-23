@@ -18,6 +18,8 @@
   python3 build.py v3         # v3만 (다른 버전 파일은 건드리지 않음)
   python3 build.py base v1 v2
   python3 build.py --ingest 새원본.html   # 새 원본을 가명 처리해 base/에 넣기 (원본 실명은 저장 안 함)
+  python3 build.py --ingest 새원본.html --as base/다른이름.html   # 일부 버전만 쓸 기준본 넣기
+      → versions/vN.json 에 "base_file": "base/다른이름.html" 을 적은 버전만 그 기준본을 쓴다
   python3 build.py --extract 게시본.html > base/longblack_v0.html   # 게시본에서 BASE 복원
 
 가명
@@ -78,7 +80,7 @@ def extract(html):
         html = re.sub(r'<title>.*?</title>', '<title>' + json.loads(t.group(1)) + '</title>', html, count=1, flags=re.S)
     for a, b in MARK.values():
         html = re.sub(r'\n?' + re.escape(a) + r'.*?' + re.escape(b), '', html, flags=re.S)
-    html = re.sub(r"(const KEY = '[^']*?)__ut_[a-z0-9]+(';)", r'\1\2', html)
+    html = re.sub(r"(const KEY = '[^']*?)__ut_[a-z0-9]+(')", r'\1\2', html)
     return html
 
 
@@ -141,15 +143,28 @@ def write(vid, html):
     shutil.copyfile(FONT, d / 'fonts' / 'PretendardVariable.woff2')
 
 
+def load_base(path):
+    b = path.read_text(encoding='utf-8')
+    check_pseudonym(b)
+    if '<!-- UT-' in b:
+        raise SystemExit(f'{path.name}: UT 블록이 섞여 있습니다. --ingest 로 다시 넣어 주세요.')
+    return b, hashlib.sha1(b.encode('utf-8')).hexdigest()
+
+
 def build_version(base, base_sha, vid):
     v = json.loads((VERS / f'{vid}.json').read_text(encoding='utf-8'))
+    base_file = v.get('base_file') or 'base/longblack_v0.html'
+    if v.get('base_file'):
+        base, base_sha = load_base(ROOT / v['base_file'])
     label = 'UT-' + v['label']
     html = apply_edits(base, v.get('edits', []), vid)
-    html, k = re.subn(r"const KEY = '([^']+)';", lambda m: f"const KEY = '{m.group(1)}__ut_{vid}';", html, count=1)
+    html, k = re.subn(r"const KEY = '([^']+)'", lambda m: f"const KEY = '{m.group(1)}__ut_{vid}'", html)
     if not k:
         print(f'[{vid}] 경고: 저장 키(const KEY)를 찾지 못해 저장 공간을 나누지 못함')
+    # 원본이 화면에 그리는 'V0' 표시를 버전 이름으로 (없으면 그냥 넘어감)
+    html = html.replace('V0 재현 · 프로토타입', f'{label} · 프로토타입(비공식)').replace('<b>롱블랙 V0 재현</b>', f'<b>롱블랙 {label}</b>')
     html = set_title(html, f'{label} · 롱블랙 프로토타입')
-    meta = {'id': vid, 'label': v['label'], 'base_sha': base_sha, 'built': now(), 'purpose': v.get('purpose', ''),
+    meta = {'id': vid, 'label': v['label'], 'base_file': base_file, 'base_sha': base_sha, 'built': now(), 'purpose': v.get('purpose', ''),
             'log': v.get('log', []), 'edits': v.get('edits', []), 'css': v.get('css', ''), 'js': v.get('js', '')}
     patch_json = json.dumps(meta, ensure_ascii=False, indent=1).replace('</', '<\\/')
     body = badge(label) + '\n' + block('patch', f'<script type="application/json" id="ut-patch">{patch_json}</script>' + (f'\n<script>{v["js"]}</script>' if v.get('js') else ''))
@@ -168,7 +183,11 @@ def hub_panel(base_sha, metas):
         else:
             url = reg.get(m['id'], {}).get('url', '')
             link = (f'<a href="{esc(url)}#{m["id"]}">#{m["id"]}</a> · <a href="{esc(url)}#{m["id"]}-ut">#{m["id"]}-ut</a>') if url else '<i>게시 전</i>'
-        same = '같음' if m['base_sha'] == base_sha else f'<b style="color:#ff5126">이전 기준({m["base_sha"][:7]})</b>'
+        bf = m.get('base_file', 'base/longblack_v0.html')
+        if bf != 'base/longblack_v0.html':
+            same = f'<b style="color:#5962ff">별도 기준본</b><br>{esc(pathlib.Path(bf).stem)} ({m["base_sha"][:7]})'
+        else:
+            same = '같음' if m['base_sha'] == base_sha else f'<b style="color:#ff5126">이전 기준({m["base_sha"][:7]})</b>'
         logs = ''.join(f'<li><span>{esc(l.get("date",""))}</span> {esc(l.get("what",""))}</li>' for l in m.get('log', [])[-3:])
         rows += (f'<tr><th>{esc(m["label"])}</th><td>{link}<div class="pp">{esc(m.get("purpose",""))}</div><ul>{logs}</ul></td>'
                  f'<td>{len(m.get("edits", []))}개{" +CSS" if m.get("css") else ""}{" +JS" if m.get("js") else ""}</td><td>{same}</td></tr>')
@@ -208,18 +227,16 @@ def main(argv):
     if argv[:1] == ['--ingest']:
         raw = pathlib.Path(argv[1]).read_text(encoding='utf-8')
         raw = extract(raw) if '<!-- UT-' in raw else raw
-        BASE.write_text(pseudonymize(raw), encoding='utf-8')
-        print('기준본 교체 완료(가명 처리):', BASE)
+        dest = ROOT / argv[argv.index('--as') + 1] if '--as' in argv else BASE
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(pseudonymize(raw), encoding='utf-8')
+        print('기준본 넣기 완료(가명 처리):', dest.relative_to(ROOT))
         return
-    base = BASE.read_text(encoding='utf-8')
-    check_pseudonym(base)
-    if '<!-- UT-' in base:
-        raise SystemExit('기준본에 UT 블록이 섞여 있습니다. --extract로 원본을 먼저 복원하세요.')
-    base_sha = hashlib.sha1(base.encode('utf-8')).hexdigest()
+    base, base_sha = load_base(BASE)
     targets = argv or ['base'] + IDS
     for vid in [t for t in targets if t in IDS]:
         m = build_version(base, base_sha, vid)
-        print(f'{vid}: 빌드 완료 (고유 수정 {len(m["edits"])}개, 기준 {base_sha[:7]})')
+        print(f'{vid}: 빌드 완료 (기준본 {m["base_file"]} {m["base_sha"][:7]}, 고유 수정 {len(m["edits"])}개)')
     if 'base' in targets:
         metas = []
         for vid in IDS:
