@@ -2,11 +2,28 @@
   "id": "v4",
   "label": "V4",
   "slug_name": "",
-  "purpose": "(미정) 이 버전으로 무엇을 검증하나",
+  "purpose": "홈의 게임 배너 자리에서 문장 운세(내 스크랩 문장으로 만드는 오늘의 카드)로 유도했을 때, 참가자가 들어가는지·스크랩 문장을 다시 보는지",
   "log": [
-    {"date": "2026-11-22", "what": "BASE(V0 재현본)를 그대로 복제해 시작. 고유 수정 없음"}
+    {
+      "date": "2026-11-22",
+      "what": "BASE(V0 재현본)를 그대로 복제해 시작. 고유 수정 없음"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "사용자가 'v3는 그대로 두고 v4에 v3 복사해서 그대로 붙여넣어' 요청 → 저장소 V3(커밋 96d88c3: longblack_play 기준본 + 홈 문장 운세 배너)를 V4에 그대로 복사. V3는 변경 없음"
+    }
   ],
-  "edits": [],
+  "edits": [
+    {
+      "find": ".game{display:block;margin:40px 20px 0;position:relative",
+      "replace": ".ftban{position:relative;display:block;margin:40px 20px 0;height:168px;border-radius:12px;overflow:hidden;background:#a48dff;color:#191919}.ftban .art{position:absolute;right:0;top:0;bottom:0;width:170px}.ftban .art i{position:absolute;display:block}.ftban .n1{right:-18px;top:-12px;width:96px;height:150px;border-radius:5px;transform:rotate(22deg);background:repeating-linear-gradient(-28deg,#8f2b00 0 9px,#5c1c02 9px 14px)}.ftban .n2{right:30px;top:30px;width:108px;height:150px;border-radius:9px;transform:rotate(4deg);background:#0b5034}.ftban .n3{right:70px;top:84px;width:108px;height:120px;border-radius:9px;transform:rotate(-13deg);background:conic-gradient(#ff6f36 25%,#d4b08c 0 50%,#ff6f36 0 75%,#d4b08c 0) 0 0/54px 54px}.ftban .tx{position:relative;z-index:1;padding:22px 0 0 22px}.ftban .k{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;letter-spacing:-.2px}.ftban .k i{font-style:normal;font-size:11px;padding:2px 6px;border-radius:999px;background:#ff5126;color:#fff}.ftban h3{margin-top:6px;font-size:22px;font-weight:700;line-height:30px;letter-spacing:-.3px}.ftban .go{position:absolute;left:22px;bottom:18px;z-index:1;display:inline-flex;align-items:center;gap:2px;height:36px;padding:0 14px 0 16px;border-radius:18px;background:#191919;color:#fff;font-size:14px;font-weight:600}.ftban .go .ico{width:16px;height:16px;stroke-width:2}\n.game{display:block;margin:40px 20px 0;position:relative"
+    },
+    {
+      "find": "<a class=\"game\" href=\"#/play\"><div class=\"px\"></div><div class=\"in\"><p>매일 게임하고<br><b>다양한 보상</b>을 받아가세요</p><span class=\"play\">Play</span></div></a>",
+      "replace": "${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class=\"ftban\" href=\"#/play/fortune\"><div class=\"art\" aria-hidden=\"true\"><i class=\"n1\"></i><i class=\"n2\"></i><i class=\"n3\"></i></div><div class=\"tx\"><span class=\"k\">문장 운세${done ? '<i>완료</i>' : ''}</span><h3>문장 속에 숨겨진<br>오늘의 운세</h3></div><span class=\"go\">${done ? '오늘의 카드 다시 보기' : '운세 확인하기'} ${I.chev}</span></a>`; })()}"
+    }
+  ],
   "css": "",
-  "js": ""
+  "js": "",
+  "base_file": "base/longblack_play.html"
 }
