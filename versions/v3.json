@@ -15,6 +15,10 @@
     {
       "date": "2026-11-23",
       "what": "사용자가 '문장 속에 숨겨진 오늘의 운세'가 맞다며 문구 정정 + 플레이 허브 카드처럼 노트 3장이 펼쳐진 그래픽 요청 → 제목 '문장 운세', 문구 '문장 속에 숨겨진 오늘의 운세'로 교체, 그래픽을 줄무늬 갈색·초록·체크무늬 노트 3장 겹침으로 다시 그림"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "사용자가 배너의 '완료' 표시를 없애고 '오늘의 카드 보러가기'로 바꾸라고 요청 → 운세를 끝낸 뒤에도 '완료' 배지 없음, 버튼 '오늘의 카드 다시 보기' → '오늘의 카드 보러가기'. 끝내기 전 버튼 '운세 확인하기'는 그대로"
     }
   ],
   "edits": [
@@ -24,7 +28,7 @@
     },
     {
       "find": "<a class=\"game\" href=\"#/play\"><div class=\"px\"></div><div class=\"in\"><p>매일 게임하고<br><b>다양한 보상</b>을 받아가세요</p><span class=\"play\">Play</span></div></a>",
-      "replace": "${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class=\"ftban\" href=\"#/play/fortune\"><div class=\"art\" aria-hidden=\"true\"><i class=\"n1\"></i><i class=\"n2\"></i><i class=\"n3\"></i></div><div class=\"tx\"><span class=\"k\">문장 운세${done ? '<i>완료</i>' : ''}</span><h3>문장 속에 숨겨진<br>오늘의 운세</h3></div><span class=\"go\">${done ? '오늘의 카드 다시 보기' : '운세 확인하기'} ${I.chev}</span></a>`; })()}"
+      "replace": "${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class=\"ftban\" href=\"#/play/fortune\"><div class=\"art\" aria-hidden=\"true\"><i class=\"n1\"></i><i class=\"n2\"></i><i class=\"n3\"></i></div><div class=\"tx\"><span class=\"k\">문장 운세</span><h3>문장 속에 숨겨진<br>오늘의 운세</h3></div><span class=\"go\">${done ? '오늘의 카드 보러가기' : '운세 확인하기'} ${I.chev}</span></a>`; })()}"
     }
   ],
   "css": "",
