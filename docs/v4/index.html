@@ -1061,7 +1061,7 @@ function renderHome() {
         <h2>${esc(today.title)}</h2>
       </div>
     </a>
-    ${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class="ftban" href="#/play/fortune"><div class="art" aria-hidden="true"><i class="n1"></i><i class="n2"></i><i class="n3"></i></div><div class="tx"><span class="k">노트 추천</span><h3>강성모님의<br>오늘의 노트 추천</h3></div><span class="go">${done ? '오늘의 카드 보러가기' : '운세 확인하기'} ${I.chev}</span></a>`; })()}
+    ${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class="ftban" href="#/play/fortune"><div class="art" aria-hidden="true"><i class="n1"></i><i class="n2"></i><i class="n3"></i></div><div class="tx"><span class="k">노트 추천</span><h3>강성모님의<br>오늘의 노트 추천</h3></div><span class="go">오늘의 추천 노트 보러가기 ${I.chev}</span></a>`; })()}
     ${secs}
     <section class="upc"><div class="hd"><div><h2>공개 예정 노트</h2><p class="s">하루에 하나씩 공개됩니다.</p></div><button class="bell" data-act="toast" data-msg="롱블랙 앱에서 알림을 받을 수 있어요">${I.bell}</button>
       ${S.tips.upc ? '' : `<div class="tip" data-act="tip-close" data-tip="upc">롱블랙 앱으로 노트 알림을 받아보세요!</div>`}</div>${upc}</section>
@@ -2321,7 +2321,7 @@ window.LBT = { mount, state: () => st, summary };
  "label": "V4",
  "base_file": "base/longblack_play.html",
  "base_sha": "3d75eba29cacd09a9abc6878493eea6ef46a2d36",
- "built": "2026-11-23 22:01",
+ "built": "2026-11-23 22:04",
  "purpose": "홈의 게임 배너 자리에서 문장 운세(내 스크랩 문장으로 만드는 오늘의 카드)로 유도했을 때, 참가자가 들어가는지·스크랩 문장을 다시 보는지",
  "log": [
   {
@@ -2339,6 +2339,10 @@ window.LBT = { mount, state: () => st, summary };
   {
    "date": "2026-11-23",
    "what": "사용자가 V4 배너 내용을 '노트 추천 / 강성모님의 오늘의 노트 추천'으로 바꾸라고 요청 → 작은 제목 '문장 운세'→'노트 추천', 큰 문구 '문장 속에 숨겨진 오늘의 운세'→'강성모님의 오늘의 노트 추천'. 버튼·연결 화면(#/play/fortune)·그래픽은 그대로"
+  },
+  {
+   "date": "2026-11-23",
+   "what": "사용자가 V4에서 '운세 확인하기'는 없어져야 한다며 버튼을 '오늘의 추천 노트 보러가기 >'로 정함, 연결 화면은 '일단 문장 운세 그대로' → 버튼을 운세 여부와 상관없이 '오늘의 추천 노트 보러가기 ›' 하나로. 누르면 문장 운세(#/play/fortune)"
   }
  ],
  "edits": [
@@ -2348,7 +2352,7 @@ window.LBT = { mount, state: () => st, summary };
   },
   {
    "find": "<a class=\"game\" href=\"#/play\"><div class=\"px\"><\/div><div class=\"in\"><p>매일 게임하고<br><b>다양한 보상<\/b>을 받아가세요<\/p><span class=\"play\">Play<\/span><\/div><\/a>",
-   "replace": "${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class=\"ftban\" href=\"#/play/fortune\"><div class=\"art\" aria-hidden=\"true\"><i class=\"n1\"><\/i><i class=\"n2\"><\/i><i class=\"n3\"><\/i><\/div><div class=\"tx\"><span class=\"k\">노트 추천<\/span><h3>강성모님의<br>오늘의 노트 추천<\/h3><\/div><span class=\"go\">${done ? '오늘의 카드 보러가기' : '운세 확인하기'} ${I.chev}<\/span><\/a>`; })()}"
+   "replace": "${(() => { const d = new Date(); const done = S.play && S.play.fortune && S.play.fortune.date === `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; return `<a class=\"ftban\" href=\"#/play/fortune\"><div class=\"art\" aria-hidden=\"true\"><i class=\"n1\"><\/i><i class=\"n2\"><\/i><i class=\"n3\"><\/i><\/div><div class=\"tx\"><span class=\"k\">노트 추천<\/span><h3>강성모님의<br>오늘의 노트 추천<\/h3><\/div><span class=\"go\">오늘의 추천 노트 보러가기 ${I.chev}<\/span><\/a>`; })()}"
   }
  ],
  "css": "",
