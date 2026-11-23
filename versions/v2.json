@@ -2,7 +2,7 @@
   "id": "v2",
   "label": "V2",
   "slug_name": "",
-  "purpose": "(미정) 이 버전으로 무엇을 검증하나",
+  "purpose": "to-be · 관심사(자기계발) 기반 추천 노트 (원본 파일의 variant 설명)",
   "log": [
     {
       "date": "2026-11-22",
@@ -11,10 +11,14 @@
     {
       "date": "2026-11-23",
       "what": "사용자가 새 원본(휴대폰 프레임 + UT 행동 트래커가 붙은 버전)을 주며 V1·V2에 적용 요청 → V1·V2의 기준본을 base/longblack_tracker.html 로 교체. V3~V5는 기존 BASE 유지"
+    },
+    {
+      "date": "2026-11-24",
+      "what": "사용자가 새 파일 longblack_v2.html(728KB)을 주며 'v2에 첨부' 요청 → V2 기준본을 base/longblack_v2.html(가명 처리)로 교체. V1·V3·V4·V5는 그대로"
     }
   ],
   "edits": [],
   "css": "",
   "js": "",
-  "base_file": "base/longblack_tracker.html"
+  "base_file": "base/longblack_v2.html"
 }
